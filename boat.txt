@@ -5,15 +5,21 @@ function AMBoat.New()
 	local self = {}
 	self.Entity = nil
 	self.AMPlayer = nil
-	self.Mods = { boost=AMMods.Instantiate("boost"), jump=AMMods.Instantiate("jump") }
+	self.Mods = { shift=AMMods.Instantiate("boost"), space=AMMods.Instantiate("jump") }
 	self.Weapons = {}
 	self.SmokeEntity = nil
+	self.LastBump = 0
+	self.Health = 15
 	setmetatable(self, AMBoat_mt)
 	return self
 end
 
 function AMBoat:SetPlayer(amPly)
 	self.AMPlayer = amPly
+end
+
+function AMBoat:GetPlayer()
+	return self.AMPlayer
 end
 
 function AMBoat:GetEntity()
@@ -38,6 +44,8 @@ function AMBoat:Spawn()
 	self.Entity:CPPISetOwner(self.AMPlayer:GetEntity())
 	self.Entity:Spawn()
 	self.Entity:Activate()
+	self.Entity:AddCallback("PhysicsCollide", AMBoat.CollisionCallback)
+	self.Entity.AMBoat = self
 	
 	self.SmokeEntity = ents.Create("prop_physics")
 	self.SmokeEntity:SetModel("models/props_junk/PopCan01a.mdl")
@@ -53,17 +61,67 @@ function AMBoat:Spawn()
 end
 
 function AMBoat:Tick()
-	if self.Entity and self.Entity:IsValid() and self.AMPlayer and self.AMPlayer:GetEntity() and self.AMPlayer:GetEntity():IsValid() then
-		if self.Entity:GetDriver() == self.AMPlayer:GetEntity() then
-			self:CheckKeys()
-		end
+	if self:IsPlaying() then
+		self:CheckKeys()
 	end
 end
 
 function AMBoat:CheckKeys()
 	if self.AMPlayer:CheckKey(IN_SPEED) then
-		self.Mods["boost"]:Activate(self.AMPlayer, self)
+		self.Mods["shift"]:Activate(self.AMPlayer, self)
 	elseif self.AMPlayer:CheckKey(IN_JUMP) then
-		self.Mods["jump"]:Activate(self.AMPlayer, self)
+		self.Mods["space"]:Activate(self.AMPlayer, self)
 	end
+end
+
+function AMBoat:IsPlaying()
+	return self.Entity and self.Entity:IsValid() and self.AMPlayer and self.AMPlayer:GetEntity() and self.AMPlayer:GetEntity():IsValid() and self.Entity:GetDriver() == self.AMPlayer:GetEntity()
+end
+
+function AMBoat:Damage(amount)
+	self.Health = math.max(0, self.Health - amount)
+	if self.Health == 0 then
+		self:OnDeath()
+	end
+end
+
+function AMBoat:OnDeath()
+	self.AMPlayer:GetEntity():Kill()
+end
+
+function AMBoat.CollisionCallback(boat, data)	
+	-- Be sure that this boat is valid and currently playing
+	local self = boat.AMBoat
+	if not self or not boat:IsValid() or not self:IsPlaying() then return end
+	
+	-- Don't take too much collisions at the same time
+	if CurTime() - self.LastBump < 0.5 then return end
+	
+	-- Retrieve the entity hit and try to retrieve its boat structure
+	local otherEntity = data.HitEntity
+	local other = otherEntity.AMBoat
+	
+	-- Compute the damage this boat is taking
+	local selfVel = 0
+	local otherVel = 0
+	if otherEntity:IsWorld() then
+		selfVel = data.OurOldVelocity:Dot(data.HitNormal)
+	else
+		local collisionAxis = (boat:LocalToWorld(boat:OBBCenter()) - otherEntity:LocalToWorld(otherEntity:OBBCenter())):GetNormalized()
+		selfVel = data.OurOldVelocity:Dot(collisionAxis)
+		otherVel = data.TheirOldVelocity:Dot(collisionAxis)
+	end
+	
+	-- Apply the damage if the velocity is big enough	
+	if math.max(selfVel, otherVel) > 500 then
+		print("Bump!")
+		if selfVel > otherVel and not otherEntity:IsWorld() then
+			self:Damage(1)
+		else
+			self:Damage(5)
+		end
+	end
+
+	-- Add a small invulnerability time if hit by another player
+	self.LastBump = CurTime()
 end

@@ -3,7 +3,6 @@ AMMain = {}
 function AMMain.InitPlayer(ply)
 	local amPly = ply.AMPlayer or AMPlayer.New(ply)
 	local amBoat = amPly.AMBoat or AMBoat.New()
-	ply.AMPlayer = amPly
 	amPly:SetAirboat(amBoat)
 	amBoat:SetPlayer(amPly)
 	amBoat:Spawn()

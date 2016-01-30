@@ -6,6 +6,8 @@ function AMPlayer.New(ply)
 	setmetatable(self, AMPlayer_mt)
 	self.Player = ply
 	self.AMBoat = nil
+	self.Health = 15
+	ply.AMPlayer = self
 	return self
 end
 
