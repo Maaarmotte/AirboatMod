@@ -1,0 +1,21 @@
+AMMain = {}
+
+function AMMain.InitPlayer(ply)
+	local amPly = ply.AMPlayer or AMPlayer.New(ply)
+	local amBoat = amPly.AMBoat or AMBoat.New()
+	ply.AMPlayer = amPly
+	amPly:SetAirboat(amBoat)
+	amBoat:SetPlayer(amPly)
+	amBoat:Spawn()
+end
+
+function AMMain.Tick()
+	for _,ply in ipairs(player.GetAll()) do
+		if ply.AMPlayer then
+			local boat = ply.AMPlayer:GetAirboat()
+			if boat then
+				boat:Tick()
+			end
+		end
+	end
+end

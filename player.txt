@@ -1,0 +1,26 @@
+AMPlayer = {}
+AMPlayer_mt = { __index = AMPlayer }
+
+function AMPlayer.New(ply)
+	local self = {}
+	setmetatable(self, AMPlayer_mt)
+	self.Player = ply
+	self.AMBoat = nil
+	return self
+end
+
+function AMPlayer:GetEntity()
+	return self.Player
+end
+
+function AMPlayer:SetAirboat(amBoat)
+	self.AMBoat = amBoat
+end
+
+function AMPlayer:GetAirboat()
+	return self.AMBoat
+end
+
+function AMPlayer:CheckKey(key)
+	return self.Player:KeyDown(key)
+end

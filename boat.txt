@@ -1,0 +1,69 @@
+AMBoat = {}
+AMBoat_mt = { __index = AMBoat }
+
+function AMBoat.New()
+	local self = {}
+	self.Entity = nil
+	self.AMPlayer = nil
+	self.Mods = { boost=AMMods.Instantiate("boost"), jump=AMMods.Instantiate("jump") }
+	self.Weapons = {}
+	self.SmokeEntity = nil
+	setmetatable(self, AMBoat_mt)
+	return self
+end
+
+function AMBoat:SetPlayer(amPly)
+	self.AMPlayer = amPly
+end
+
+function AMBoat:GetEntity()
+	return self.Entity
+end
+
+function AMBoat:GetSmokeEntity()
+	return self.SmokeEntity
+end
+
+function AMBoat:Spawn()
+	if not self.AMPlayer then
+		print("[Airboat] Can't spawn airboat without owner !")
+		return
+	end
+	if self.Entity and self.Entity:IsValid() then
+		self.Entity:Remove()
+	end
+	self.Entity = ents.Create("prop_vehicle_airboat")
+	self.Entity:SetModel("models/airboat.mdl")
+	self.Entity:SetPos(AMUtils.AimPosClamp(self.AMPlayer:GetEntity(), 250))
+	self.Entity:CPPISetOwner(self.AMPlayer:GetEntity())
+	self.Entity:Spawn()
+	self.Entity:Activate()
+	
+	self.SmokeEntity = ents.Create("prop_physics")
+	self.SmokeEntity:SetModel("models/props_junk/PopCan01a.mdl")
+	self.SmokeEntity:SetPos(self.Entity:LocalToWorld(Vector(0, -110, 25)))
+	self.SmokeEntity:SetNotSolid(true)
+	self.SmokeEntity:Spawn()
+	self.SmokeEntity:SetParent(self.Entity)
+	self.SmokeEntity:SetColor(Color(0, 0, 0, 0))
+	self.SmokeEntity:SetRenderMode(RENDERMODE_TRANSALPHA)
+	
+	self.Entity:EmitSound("ui/itemcrate_smash_ultrarare_short.wav")
+	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
+end
+
+function AMBoat:Tick()
+	if self.Entity and self.Entity:IsValid() and self.AMPlayer and self.AMPlayer:GetEntity() and self.AMPlayer:GetEntity():IsValid() then
+		if self.Entity:GetDriver() == self.AMPlayer:GetEntity() then
+			self:CheckKeys()
+		end
+	end
+end
+
+function AMBoat:CheckKeys()
+	if self.AMPlayer:CheckKey(IN_SPEED) then
+		self.Mods["boost"]:Activate(self.AMPlayer, self)
+	elseif self.AMPlayer:CheckKey(IN_JUMP) then
+		self.Mods["jump"]:Activate(self.AMPlayer, self)
+	end
+end

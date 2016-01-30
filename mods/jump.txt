@@ -1,0 +1,14 @@
+local mod = {}
+
+mod.Name = "jump"
+mod.Delay = 3
+mod.Type = "mod"
+
+function mod:Run(amPly, amBoat)
+	local boat = amBoat:GetEntity()
+	local physobj = boat:GetPhysicsObject()
+    physobj:SetVelocity(boat:GetVelocity() + boat:GetUp()*350)
+    boat:EmitSound("weapons/bumper_car_jump.wav")
+end
+
+AMMods.Register(mod)
