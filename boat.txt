@@ -86,25 +86,45 @@ function AMBoat:Damage(amount, attacker)
 end
 
 function AMBoat:OnDeath(attacker)
+	-- Kill the player
 	self.AMPlayer:GetEntity():Kill()
+
+	-- Play effects and sounds
+	local other = attacker.AMBoat
+	
 	self.Entity:EmitSound("items/cart_explode.wav")
 	self.Entity:EmitSound("weapons/demo_charge_hit_flesh_range1.wav")
-	local other = attacker.AMBoat
+	
+	ParticleEffectAttach("asplode_hoodoo_flash", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
+	ParticleEffectAttach("asplode_hoodoo_shockwave", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
+	ParticleEffectAttach("asplode_hoodoo_embers", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
+	ParticleEffectAttach("asplode_hoodoo_dust", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
+	ParticleEffectAttach("asplode_hoodoo", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
+	
 	if other and other:IsPlaying() then
 		other:GetEntity():EmitSound("ambient/bumper_car_cheer" .. math.random(3) .. ".wav")
 		timer.Simple(1, function() other:GetEntity():EmitSound("items/samurai/tf_conch.wav") end)
 	end
-	timer.Simple(2.5, function() 
-		self.Health = 15
+	
+	-- Make it invulnerable et respawn player	
+	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
+	self.Entity:SetColor(Color(255, 255, 255, 100))
+	self.Health = 15
+	self.LastCollision = CurTime() + 5
+	
+	timer.Simple(2, function() 
 		self.AMPlayer:Respawn()
-		timer.Simple(1, function()
-			if self.Entity:GetDriver() and self.Entity:IsValid() then
-				self.Entity:GetDriver():Kill()
-			end
-			self.AMPlayer:GetEntity():EnterVehicle(self.Entity)
-			self.Entity:EmitSound("ui/itemcrate_smash_ultrarare_short.wav")
-			ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
-		end)
+	end)
+	
+	timer.Simple(2.25, function()
+		local ply = self.AMPlayer:GetEntity()
+		ply:EnterVehicle(self.Entity)
+		ply:EmitSound("ui/itemcrate_smash_ultrarare_short.wav")
+		ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
+	end)
+	
+	timer.Simple(5, function()
+		self.Entity:SetColor(Color(255, 255, 255, 255))
 	end)
 end
 
