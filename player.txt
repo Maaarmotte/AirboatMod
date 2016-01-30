@@ -26,3 +26,7 @@ end
 function AMPlayer:CheckKey(key)
 	return self.Player:KeyDown(key)
 end
+
+function AMPlayer:Respawn()
+	self.Player:Spawn()
+end

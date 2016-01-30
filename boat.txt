@@ -78,15 +78,34 @@ function AMBoat:IsPlaying()
 	return self.Entity and self.Entity:IsValid() and self.AMPlayer and self.AMPlayer:GetEntity() and self.AMPlayer:GetEntity():IsValid() and self.Entity:GetDriver() == self.AMPlayer:GetEntity()
 end
 
-function AMBoat:Damage(amount)
+function AMBoat:Damage(amount, attacker)
 	self.Health = math.max(0, self.Health - amount)
 	if self.Health == 0 then
-		self:OnDeath()
+		self:OnDeath(attacker)
 	end
 end
 
-function AMBoat:OnDeath()
+function AMBoat:OnDeath(attacker)
 	self.AMPlayer:GetEntity():Kill()
+	self.Entity:EmitSound("items/cart_explode.wav")
+	self.Entity:EmitSound("weapons/demo_charge_hit_flesh_range1.wav")
+	local other = attacker.AMBoat
+	if other and other:IsPlaying() then
+		other:GetEntity():EmitSound("ambient/bumper_car_cheer" .. math.random(3) .. ".wav")
+		timer.Simple(1, function() other:GetEntity():EmitSound("items/samurai/tf_conch.wav") end)
+	end
+	timer.Simple(2.5, function() 
+		self.Health = 15
+		self.AMPlayer:Respawn()
+		timer.Simple(1, function()
+			if self.Entity:GetDriver() and self.Entity:IsValid() then
+				self.Entity:GetDriver():Kill()
+			end
+			self.AMPlayer:GetEntity():EnterVehicle(self.Entity)
+			self.Entity:EmitSound("ui/itemcrate_smash_ultrarare_short.wav")
+			ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
+		end)
+	end)
 end
 
 function AMBoat.CollisionCallback(boat, data)	
@@ -106,7 +125,7 @@ function AMBoat.CollisionCallback(boat, data)
 	local otherVel = 0
 	if otherEntity:IsWorld() then
 		selfVel = data.OurOldVelocity:Dot(data.HitNormal)
-	else
+	elseif other and otherEntity:IsValid() and other:IsPlaying() then
 		local collisionAxis = (boat:LocalToWorld(boat:OBBCenter()) - otherEntity:LocalToWorld(otherEntity:OBBCenter())):GetNormalized()
 		selfVel = data.OurOldVelocity:Dot(collisionAxis)
 		otherVel = data.TheirOldVelocity:Dot(collisionAxis)
@@ -114,14 +133,14 @@ function AMBoat.CollisionCallback(boat, data)
 	
 	-- Apply the damage if the velocity is big enough	
 	if math.max(selfVel, otherVel) > 500 then
-		print("Bump!")
 		if selfVel > otherVel and not otherEntity:IsWorld() then
-			self:Damage(1)
+			self:Damage(1, otherEntity)
 		else
-			self:Damage(5)
+			self:Damage(5, otherEntity)
 		end
+		boat:EmitSound("weapons/bumper_car_hit" .. math.random(1, 8) .. ".wav")
+		
+		-- Add a small invulnerability time if hit
+		self.LastBump = CurTime()
 	end
-
-	-- Add a small invulnerability time if hit by another player
-	self.LastBump = CurTime()
 end
