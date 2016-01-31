@@ -1,5 +1,8 @@
 -- Send the files to clients
 AddCSLuaFile("autorun/client/cl_init.lua")
+AddCSLuaFile("utils.lua")
+AddCSLuaFile("mods.lua")
+AddCSLuaFile("derma.lua")
 
 for _,file in pairs(file.Find("mods/*.lua", "LUA")) do
 	AddCSLuaFile("mods/" .. file)

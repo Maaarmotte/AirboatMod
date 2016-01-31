@@ -4,12 +4,13 @@ if SERVER then
 	
 	function AMMenu.SendMenu(amPlayer, amBoat)
 		if amBoat then
-			local mods = {}
-			for k,v in pairs(amBoat.Mods) do
-				mods[k] = v.Name
-			end
 			net.Start("am_show_menu")
-				net.WriteTable(mods)
+				local active = {}
+				for k,v in pairs(amBoat.Mods) do
+					active[k] = v.Name
+				end
+				net.WriteTable(active)
+				net.WriteTable(amPlayer.Mods)
 			net.Send(amPlayer:GetEntity())
 		end
 	end
@@ -18,7 +19,7 @@ else
 	AMMenu.SY = 300
 	AMMenu.MainFrame = nil
 	
-	function AMMenu.Display(mods)
+	function AMMenu.Display(active, mods)
 		PrintTable(mods)
 		
 		if not mods then
@@ -48,13 +49,16 @@ else
 		
 		local shiftButton = vgui.Create("DButton", AMMenu.MainFrame)
 		shiftButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05 + 25)
-		shiftButton:SetText("[Shift]: Speed Boost")
+		shiftButton:SetText("[Shift]: " .. AMMods.Mods[active["shift"]].FullName)
 		shiftButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
 		shiftButton.DoClick = function()
 			local submenu = DermaMenu()
 			for k,v in pairs(mods) do
 				if AMMods.Mods[v].Type == "shift" then
-					submenu:AddOption(AMMods.Mods[v].FullName)
+					submenu:AddOption(AMMods.Mods[v].FullName, function()
+						LocalPlayer():ConCommand("am_mod " .. v)
+						shiftButton:SetText("[Shift]: " .. AMMods.Mods[v].FullName)
+					end)
 				end
 			end
 			submenu:Open()
@@ -62,13 +66,16 @@ else
 		
 		local spaceButton = vgui.Create("DButton", AMMenu.MainFrame)
 		spaceButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05*5 + 25)
-		spaceButton:SetText("[Space]: Jump Boost")
+		spaceButton:SetText("[Space]: " .. AMMods.Mods[active["space"]].FullName)
 		spaceButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
 		spaceButton.DoClick = function()
 			local submenu = DermaMenu()
 			for k,v in pairs(mods) do
 				if AMMods.Mods[v].Type == "space" then
-					submenu:AddOption(AMMods.Mods[v].FullName)
+					submenu:AddOption(AMMods.Mods[v].FullName, function()
+						LocalPlayer():ConCommand("am_mod " .. v)
+						spaceButton:SetText("[Space]: " .. AMMods.Mods[v].FullName)
+					end)
 				end
 			end
 			submenu:Open()
@@ -92,9 +99,8 @@ else
 		end
 	end
 	
-	net.Receive("am_show_menu", function(len)
-		local mods = net.ReadTable()
-		AMMenu.Display(mods)
+	net.Receive("am_show_menu", function(len) 
+		AMMenu.Display(net.ReadTable(), net.ReadTable())
 	end)
 end
 

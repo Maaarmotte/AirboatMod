@@ -1,7 +1,7 @@
 local mod = {}
 
 mod.Name = "boost"
-mod.FullName = "Speed Boost"
+mod.FullName = "Standard Boost"
 mod.Delay = 5
 mod.Type = "shift"
 

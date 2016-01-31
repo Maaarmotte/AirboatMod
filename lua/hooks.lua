@@ -12,7 +12,7 @@ hook.Add("CanPlayerEnterVehicle", "Airboat", function(ply, boat)
 	local amPlayer = ply.AMPlayer
 	local amBoat = boat.AMBoat
 	
-	if amBoat and amBoat:GetEntity():IsValid() and amPlayer and amPlayer:GetEntity():IsValid() then
+	if amBoat and amBoat:GetEntity():IsValid() and amPlayer and amPlayer:GetEntity():IsValid() and ply == amPlayer:GetEntity() then
 		if amPlayer:GetPlaying() then
 			return true
 		end
@@ -68,4 +68,20 @@ concommand.Add("am_play", function(ply)
 	local pos = areaV1 + rand*(areaV2 - areaV1)
 	pos.z = (areaV1.z + areaV2.z)/4
 	boat:SetPos(pos)
+end)
+
+concommand.Add("am_mod", function(ply, cmd, args)
+	local name = args[1]
+	local mod = AMMods.Mods[name]
+
+	local amPlayer = ply.AMPlayer
+	if not amPlayer then return end
+
+	local amBoat = amPlayer:GetAirboat()
+	if not amBoat then return end
+	
+	if mod and table.HasValue(amPlayer.Mods, name) then
+		local key = mod.Type
+		amBoat.Mods[key] = AMMods.Instantiate(name)
+	end
 end)
