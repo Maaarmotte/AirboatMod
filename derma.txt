@@ -32,9 +32,15 @@ else
 		AMMenu.MainFrame:SetTitle("Airboat customization")
 		AMMenu.MainFrame:SetDraggable(true)
 		AMMenu.MainFrame:MakePopup()
+		AMMenu.MainFrame.Paint = function()
+			surface.SetDrawColor( 50, 50, 50, 200 )
+			surface.DrawRect( 0, 0, AMMenu.MainFrame:GetWide(), AMMenu.MainFrame:GetTall() )
+			surface.SetDrawColor( 255, 255, 255, 200 )
+			surface.DrawOutlinedRect( 0, 0, AMMenu.MainFrame:GetWide(), AMMenu.MainFrame:GetTall() )
+		end
 		
 		local modelFrame = vgui.Create("DModelPanel", AMMenu.MainFrame)
-		modelFrame:SetSize(2*AMMenu.SX/3, AMMenu.SY - 25)
+		modelFrame:SetSize(2*AMMenu.SX/3 - 5, AMMenu.SY - 25)
 		modelFrame:SetPos(AMMenu.SX/3, 25)
 		modelFrame:SetModel("models/airboat.mdl")
 		modelFrame:SetCamPos(Vector(-185, -185, 50))
@@ -66,6 +72,23 @@ else
 				end
 			end
 			submenu:Open()
+		end
+		
+		local weaponButton = vgui.Create("DButton", AMMenu.MainFrame)
+		weaponButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05*9 + 25)
+		weaponButton:SetText("[Mouse1]: None")
+		weaponButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
+		weaponButton.DoClick = function()
+			
+		end
+		
+		local playButton = vgui.Create("DButton", AMMenu.MainFrame)
+		playButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05*14 + 25)
+		playButton:SetText("Play !")
+		playButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
+		playButton.DoClick = function()
+			LocalPlayer():ConCommand("am_play")
+			AMMenu.MainFrame:Close()
 		end
 	end
 	

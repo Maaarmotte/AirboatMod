@@ -7,6 +7,7 @@ function AMPlayer.New(ply)
 	self.Player = ply
 	self.AMBoat = nil
 	self.Health = 15
+	self.Playing = false
 	ply.AMPlayer = self
 	return self
 end
@@ -29,4 +30,12 @@ end
 
 function AMPlayer:Respawn()
 	self.Player:Spawn()
+end
+
+function AMPlayer:SetPlaying(value)
+	self.Playing = value
+end
+
+function AMPlayer:GetPlaying()
+	return self.Playing
 end
