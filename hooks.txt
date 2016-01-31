@@ -5,3 +5,13 @@ hook.Add("PlayerSay", "Airboat", function(ply, text, isTeam)
 end)
 
 hook.Add("Tick", "Airboat", AMMain.Tick)
+
+hook.Add("CanPlayerEnterVehicle", "Airboat", function(ply, boat)
+	local amPlayer = ply.AMPlayer
+	local amBoat = boat.AMBoat
+	
+	if amBoat and amBoat:GetEntity():IsValid() and amPlayer and amPlayer:GetEntity():IsValid() then
+		AMMenu.SendMenu(amPlayer, amBoat)
+		return false
+	end
+end)

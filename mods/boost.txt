@@ -1,8 +1,9 @@
 local mod = {}
 
 mod.Name = "boost"
+mod.FullName = "Speed Boost"
 mod.Delay = 5
-mod.Type = "mod"
+mod.Type = "shift"
 
 function mod:Run(amPly, amBoat)
 	local boat = amBoat:GetEntity()

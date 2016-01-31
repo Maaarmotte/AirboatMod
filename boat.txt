@@ -46,6 +46,7 @@ function AMBoat:Spawn()
 	self.Entity:Activate()
 	self.Entity:AddCallback("PhysicsCollide", AMBoat.CollisionCallback)
 	self.Entity.AMBoat = self
+	self.Entity.Use = function(self, activator, caller, useType, value) activator:ChatPrint("Coming soon !") end
 	
 	self.SmokeEntity = ents.Create("prop_physics")
 	self.SmokeEntity:SetModel("models/props_junk/PopCan01a.mdl")
