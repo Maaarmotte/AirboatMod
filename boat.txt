@@ -18,6 +18,10 @@ function AMBoat:SetPlayer(amPly)
 	self.AMPlayer = amPly
 end
 
+function AMBoat:SetHealth(value)
+	self.Health = value
+end
+
 function AMBoat:GetPlayer()
 	return self.AMPlayer
 end
@@ -86,6 +90,16 @@ function AMBoat:Damage(amount, attacker)
 	end
 end
 
+function AMBoat:AddInvulnerableTime(value)
+	self.LastCollision = CurTime() + value
+	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
+	self.Entity:SetColor(Color(255, 255, 255, 100))
+	
+	timer.Create("invul" .. self.Entity:EntIndex(), value, 1, function()
+		self.Entity:SetColor(Color(255, 255, 255, 255))
+	end)
+end
+
 function AMBoat:OnDeath(attacker)
 	-- Kill the player
 	self.AMPlayer:GetEntity():Kill()
@@ -110,22 +124,14 @@ function AMBoat:OnDeath(attacker)
 	-- Make it invulnerable et respawn player	
 	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
 	self.Entity:SetColor(Color(255, 255, 255, 100))
-	self.Health = 15
-	self.LastCollision = CurTime() + 5
 	
-	timer.Simple(2, function() 
+	timer.Simple(2.5, function() 
 		self.AMPlayer:Respawn()
 	end)
 	
-	timer.Simple(2.25, function()
+	timer.Simple(2.75, function()
 		local ply = self.AMPlayer:GetEntity()
 		ply:EnterVehicle(self.Entity)
-		ply:EmitSound("ui/itemcrate_smash_ultrarare_short.wav")
-		ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
-	end)
-	
-	timer.Simple(5, function()
-		self.Entity:SetColor(Color(255, 255, 255, 255))
 	end)
 end
 

@@ -40,7 +40,7 @@ else
 		end
 		
 		local modelFrame = vgui.Create("DModelPanel", AMMenu.MainFrame)
-		modelFrame:SetSize(2*AMMenu.SX/3 - 5, AMMenu.SY - 25)
+		modelFrame:SetSize(2*AMMenu.SX/3 - 15, AMMenu.SY - 25)
 		modelFrame:SetPos(AMMenu.SX/3, 25)
 		modelFrame:SetModel("models/airboat.mdl")
 		modelFrame:SetCamPos(Vector(-185, -185, 50))
