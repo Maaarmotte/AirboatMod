@@ -17,8 +17,7 @@ end
 function AMPowerUp:Use()
 	local boat = self.Boat
 	self:Run()
-	boat.AMBoat.AMPowerUp = nil
-	PrintTable(self)
+	self = nil
 end
 
 function AMPowerUp:Think()
