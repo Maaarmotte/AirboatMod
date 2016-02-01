@@ -1,0 +1,262 @@
+
+local airboat = ents.Create("prop_physics")
+
+airboat:SetModel("models/airboat.mdl")
+airboat:SetPos(Vector(12000, 8500, -280))
+airboat:Spawn()
+
+local phys = airboat:GetPhysicsObject()
+phys:EnableMotion(false)
+
+/*
+//////////////////////////////////////////////////////////
+
+local holo_right_supp = ents.Create("prop_physics")
+holo_right_supp:SetModel("models/props_trainstation/mount_connection001a.mdl")
+holo_right_supp:SetPos(airboat:GetPos() + Vector(25, -40, 40))
+
+holo_right_supp:Spawn()
+
+holo_right_supp:SetModelScale(0.5, 0)
+holo_right_supp:SetMoveType(MOVETYPE_NONE)
+holo_right_supp:SetParent(airboat, -1)
+holo_right_supp:PhysicsInit(SOLID_NONE)
+holo_right_supp:SetMaterial("models/props_pipes/pipeset_metal")
+holo_right_supp:SetColor(Color(250, 150, 100))
+
+local holo_left_supp = ents.Create("prop_physics")
+holo_left_supp:SetModel("models/props_trainstation/mount_connection001a.mdl")
+holo_left_supp:SetPos(airboat:GetPos() + Vector(-25, -40, 40))
+holo_left_supp:SetAngles(Angle(0, 180, 0))
+
+holo_left_supp:Spawn()
+
+holo_left_supp:SetModelScale(0.5, 0)
+holo_left_supp:SetMoveType(MOVETYPE_NONE)
+holo_left_supp:SetParent(airboat, -1)
+holo_left_supp:PhysicsInit(SOLID_NONE)
+holo_left_supp:SetMaterial("models/props_pipes/pipeset_metal")
+holo_left_supp:SetColor(Color(250, 150, 100))
+
+//////////////////////////////////////////////////////////
+
+local holo_right_supp_2 = ents.Create("prop_physics")
+holo_right_supp_2:SetModel("models/props_c17/canister_propane01a.mdl")
+holo_right_supp_2:SetPos(airboat:GetPos() + Vector(40, -30, 50))
+holo_right_supp_2:SetAngles(Angle(0, 0, 90))
+
+holo_right_supp_2:Spawn()
+
+holo_right_supp_2:SetModelScale(0.4, 0)
+holo_right_supp_2:SetMoveType(MOVETYPE_NONE)
+holo_right_supp_2:SetParent(airboat, -1)
+holo_right_supp_2:PhysicsInit(SOLID_NONE)
+holo_right_supp_2:SetMaterial("models/props_pipes/pipeset_metal")
+holo_right_supp_2:SetColor(Color(250, 150, 100))
+
+local holo_left_supp_2 = ents.Create("prop_physics")
+holo_left_supp_2:SetModel("models/props_c17/canister_propane01a.mdl")
+holo_left_supp_2:SetPos(airboat:GetPos() + Vector(-40, -30, 50))
+holo_left_supp_2:SetAngles(Angle(0, 0, 90))
+
+holo_left_supp_2:Spawn()
+
+holo_left_supp_2:SetModelScale(0.4, 0)
+holo_left_supp_2:SetMoveType(MOVETYPE_NONE)
+holo_left_supp_2:SetParent(airboat, -1)
+holo_left_supp_2:PhysicsInit(SOLID_NONE)
+holo_left_supp_2:SetMaterial("models/props_pipes/pipeset_metal")
+holo_left_supp_2:SetColor(Color(250, 150, 100))
+
+
+//////////////////////////////////////////////////////////
+
+local holo_right_spin = ents.Create("prop_physics")
+holo_right_spin:SetModel("models/props_phx/misc/propeller3x_small.mdl")
+holo_right_spin:SetPos(holo_right_supp_2:GetPos() + Vector(0, -25, 0))
+holo_right_spin:SetAngles(Angle(0, 0, 90))
+
+holo_right_spin:Spawn();
+
+holo_right_spin:SetModelScale(0.3, 0)
+holo_right_spin:SetMoveType(MOVETYPE_NONE)
+holo_right_spin:SetParent(airboat, -1)
+holo_right_spin:PhysicsInit(SOLID_NONE)
+holo_right_spin:SetMaterial("models/props_pipes/pipeset_metal")
+holo_right_spin:SetColor(Color(250, 150, 100))
+
+local holo_right_spin2 = ents.Create("prop_physics")
+holo_right_spin2:SetModel("models/props_phx/misc/propeller3x_small.mdl")
+holo_right_spin2:SetPos(holo_right_supp_2:GetPos() + Vector(0, -25, 0))
+holo_right_spin2:SetAngles(Angle(0, 0, 90))
+
+holo_right_spin2:Spawn();
+
+holo_right_spin2:SetModelScale(0.3, 0)
+holo_right_spin2:SetMoveType(MOVETYPE_NONE)
+holo_right_spin2:SetParent(airboat, -1)
+holo_right_spin2:PhysicsInit(SOLID_NONE)
+holo_right_spin2:SetMaterial("models/props_pipes/pipeset_metal")
+holo_right_spin2:SetColor(Color(250, 150, 100))
+
+
+
+
+local holo_left_spin = ents.Create("prop_physics")
+holo_left_spin:SetModel("models/props_phx/misc/propeller3x_small.mdl")
+holo_left_spin:SetPos(holo_left_supp_2:GetPos() + Vector(0, -25, 0))
+holo_left_spin:SetAngles(Angle(0, 0, 90))
+
+holo_left_spin:Spawn();
+
+holo_left_spin:SetModelScale(0.3, 0)
+holo_left_spin:SetMoveType(MOVETYPE_NONE)
+holo_left_spin:SetParent(airboat, -1)
+holo_left_spin:PhysicsInit(SOLID_NONE)
+holo_left_spin:SetMaterial("models/props_pipes/pipeset_metal")
+holo_left_spin:SetColor(Color(250, 150, 100))
+
+local holo_left_spin2 = ents.Create("prop_physics")
+holo_left_spin2:SetModel("models/props_phx/misc/propeller3x_small.mdl")
+holo_left_spin2:SetPos(holo_left_supp_2:GetPos() + Vector(0, -25, 0))
+holo_left_spin2:SetAngles(Angle(0, 0, 90))
+
+holo_left_spin2:Spawn();
+
+holo_left_spin2:SetModelScale(0.3, 0)
+holo_left_spin2:SetMoveType(MOVETYPE_NONE)
+holo_left_spin2:SetParent(airboat, -1)
+holo_left_spin2:PhysicsInit(SOLID_NONE)
+holo_left_spin2:SetMaterial("models/props_pipes/pipeset_metal")
+holo_left_spin2:SetColor(Color(250, 150, 100))
+
+
+
+//////////////////////////////////////////////////////////
+
+
+local i = 0
+
+
+hook.Add("Tick", "helice", function()
+	if (holo_right_spin and holo_right_spin:IsValid() and holo_right_spin2 and holo_right_spin2:IsValid() and holo_left_spin and holo_left_spin:IsValid() and holo_left_spin2 and holo_left_spin2:IsValid()) then
+		i = i + 5
+		holo_right_spin:SetLocalAngles(Angle(i, 0, 90))
+		holo_right_spin2:SetLocalAngles(Angle(-i, 0, 90))
+		
+		holo_left_spin:SetLocalAngles(Angle(i, 0, 90))
+		holo_left_spin2:SetLocalAngles(Angle(-i, 0, 90))
+	end
+	
+end)
+*/
+
+
+
+/*
+
+local holo_tige = ents.Create("prop_physics")
+holo_tige:SetModel("models/props_docks/dock01_pole01a_128.mdl")
+holo_tige:SetPos(airboat:GetPos() + Vector(0, -25, 65))
+holo_tige:SetAngles(Angle(0, 90, 0))
+
+holo_tige:Spawn()
+
+holo_tige:SetModelScale(0.5, 0)
+holo_tige:SetMoveType(MOVETYPE_NONE)
+holo_tige:SetParent(airboat, -1)
+holo_tige:PhysicsInit(SOLID_NONE)
+
+
+
+local holo_helice = ents.Create("prop_physics")
+holo_helice:SetModel("models/props_citizen_tech/windmill_blade004a.mdl")
+holo_helice:SetPos(holo_tige:GetPos() + Vector(0, -3, 32))
+holo_helice:SetAngles(holo_tige:GetAngles() + Angle(-90, 0, 0))
+
+holo_helice:Spawn()
+
+holo_helice:SetModelScale(0.5, 0)
+holo_helice:SetMoveType(MOVETYPE_NONE)
+holo_helice:SetParent(holo_tige, -1)
+holo_helice:PhysicsInit(SOLID_NONE)
+
+local i = 0
+hook.Add("Tick", "helice", function()
+	if (holo_tige and holo_tige:IsValid()) then
+		i = i + 5
+		holo_tige:SetLocalAngles(Angle(0, i, 0))
+		//holo_helice:SetAngles(holo_tige:GetAngles() + Angle(-90, 0, 0))
+	end
+	
+end)
+
+*/
+
+
+
+
+local holo_right_supp = ents.Create("prop_physics")
+holo_right_supp:SetModel("models/props_trainstation/mount_connection001a.mdl")
+holo_right_supp:SetPos(airboat:GetPos() + Vector(25, -40, 40))
+
+holo_right_supp:Spawn()
+
+holo_right_supp:SetModelScale(0.5, 0)
+holo_right_supp:SetMoveType(MOVETYPE_NONE)
+holo_right_supp:SetParent(airboat, -1)
+holo_right_supp:PhysicsInit(SOLID_NONE)
+holo_right_supp:SetMaterial("models/props_canal/metalwall005b")
+
+
+local holo_left_supp = ents.Create("prop_physics")
+holo_left_supp:SetModel("models/props_trainstation/mount_connection001a.mdl")
+holo_left_supp:SetPos(airboat:GetPos() + Vector(-25, -40, 40))
+holo_left_supp:SetAngles(Angle(0, 180, 0))
+
+holo_left_supp:Spawn()
+
+holo_left_supp:SetModelScale(0.5, 0)
+holo_left_supp:SetMoveType(MOVETYPE_NONE)
+holo_left_supp:SetParent(airboat, -1)
+holo_left_supp:PhysicsInit(SOLID_NONE)
+holo_left_supp:SetMaterial("models/props_canal/metalwall005b")
+
+
+
+//////////////////////////////////////////////////////////
+
+
+local holo_right_supp_2 = ents.Create("prop_physics")
+holo_right_supp_2:SetModel("models/xqm/jetengine.mdl")
+holo_right_supp_2:SetPos(airboat:GetPos() + Vector(35, -30, 50))
+holo_right_supp_2:SetAngles(Angle(0, 90, 0))
+
+holo_right_supp_2:Spawn()
+
+holo_right_supp_2:SetModelScale(0.8, 0)
+holo_right_supp_2:SetMoveType(MOVETYPE_NONE)
+holo_right_supp_2:SetParent(airboat, -1)
+holo_right_supp_2:PhysicsInit(SOLID_NONE)
+
+
+
+local holo_left_supp_2 = ents.Create("prop_physics")
+holo_left_supp_2:SetModel("models/xqm/jetengine.mdl")
+holo_left_supp_2:SetPos(airboat:GetPos() + Vector(-35, -30, 50))
+holo_left_supp_2:SetAngles(Angle(0, 90, 0))
+
+holo_left_supp_2:Spawn()
+
+holo_left_supp_2:SetModelScale(0.8, 0)
+holo_left_supp_2:SetMoveType(MOVETYPE_NONE)
+holo_left_supp_2:SetParent(airboat, -1)
+holo_left_supp_2:PhysicsInit(SOLID_NONE)
+
+
+
+
+
+
+
+
