@@ -62,7 +62,7 @@ if SERVER then
 		sound.Play(Sound("garrysmod/balloon_pop_cute.wav"), self:GetPos(), 75)
 	end
 
-	function ENT:TakePowerUp(amBoad)
+	function ENT:TakePowerUp(amBoat)
 
 	end
 
@@ -89,13 +89,14 @@ if SERVER then
 
 		if ent.AMBoat and ent.AMBoat:IsPlaying() then
 			if self.powerup then
-				local amBoad = ent.AMBoat
+				local amBoat = ent.AMBoat
+				amBoat.AMPowerUp = nil
 
-				if not amBoad.AMPowerUp then
-					local cantake = hook.Call('AMPowerUp_Take', GM, amBoad) or true
+				if not (amBoat.AMPowerUp and amBoat.AMPowerUp.Name) then
+					local cantake = hook.Call('AMPowerUp_Take', GM, amBoat) or true
 
 					if cantake then
-						amBoad.AMPowerUp = AMPowerUps.Instantiate(self.powerup.Name, amBoad)
+						amBoat.AMPowerUp = AMPowerUps.Instantiate(self.powerup.Name, amBoat.Entity)
 
 						sound.Play(Sound("garrysmod/balloon_pop_cute.wav"), self:GetPos(), 75)
 						self.powerup = nil

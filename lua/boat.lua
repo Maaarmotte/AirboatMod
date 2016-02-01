@@ -2,14 +2,15 @@ AMBoat = {}
 AMBoat_mt = { __index = AMBoat }
 
 function AMBoat.New()
-	local self = {}
-	self.Entity = nil
-	self.AMPlayer = nil
-	self.Mods = { shift=AMMods.Instantiate("boost"), space=AMMods.Instantiate("jump") }
-	self.Weapons = {}
-	self.SmokeEntity = nil
-	self.LastBump = 0
-	self.Health = 15
+	local self      	= {}
+	self.Entity     	= nil
+	self.AMPlayer   	= nil
+	self.AMPowerUp  	= nil
+	self.Mods       	= { shift=AMMods.Instantiate("boost"), space=AMMods.Instantiate("jump") }
+	self.Weapons    	= {}
+	self.SmokeEntity	= nil
+	self.LastBump   	= 0
+	self.Health     	= 15
 	setmetatable(self, AMBoat_mt)
 	return self
 end

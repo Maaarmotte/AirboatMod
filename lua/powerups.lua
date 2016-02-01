@@ -1,21 +1,24 @@
 AMPowerUp = {}
-AMPowerUp_mt = {  __index = function(t, k) return AMPowerUp[k] end }
+AMPowerUp_mt = {  __index = function(t, k) return AMPowerUps.PowerUps[t.Name][k] or AMPowerUp[k] end }
 
-function AMPowerUp.New(amboat)
+function AMPowerUp.New()
 	local self = {}
 	setmetatable(self, AMPowerUp_mt)
 	table.insert(AMPowerUps.Instances, self)
-	self.AMBoat	= amboat
+
 
 	return self
 end
-//
-function AMPowerUp:Take(amBoat)
 
+function AMPowerUp:Take()
+	print('asd')
 end
 
-function AMPowerUp:Use(amBoat)
-
+function AMPowerUp:Use()
+	local boat = self.Boat
+	self:Run()
+	boat.AMBoat.AMPowerUp = nil
+	PrintTable(self)
 end
 
 function AMPowerUp:Think()
@@ -26,15 +29,25 @@ function AMPowerUp:Tick()
 
 end
 
-AMPowerUps          	= {}
-AMPowerUps.PowerUps 	= {}
-AMPowerUps.Instances	= {}
 
-function AMPowerUps.Instantiate(name, amBoad)
-	local powerup = AMPowerUp.New()
-	PrintTable(AMPowerUps)
-	powerup.Name = AMPowerUps.PowerUps[name].Name
-	return powerup
+///////////////////
+///////////////////
+
+function AMPowerUps.Instantiate(name, boat)
+	local amBoat = boat.AMBoat
+	if amBoat then
+		local powerup 	= AMPowerUp.New()
+		powerup.Boat  	= boat
+		powerup.AMBoat	= amBoad
+		powerup.Name  	= AMPowerUps.PowerUps[name].Name
+
+		powerup:Take()
+		if powerup.UseOnTake then
+			powerup:Use()
+		end
+
+		return powerup
+	end
 end
  
 function AMPowerUps.GetRandom()
