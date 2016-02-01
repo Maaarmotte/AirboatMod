@@ -15,6 +15,8 @@ function AMBoat.New()
 	return self
 end
 
+//SETTER
+
 function AMBoat:SetPlayer(amPly)
 	self.AMPlayer = amPly
 end
@@ -23,12 +25,27 @@ function AMBoat:SetHealth(value)
 	self.Health = value
 end
 
+function AMBoat:SetPowerUp(powerupName)
+	self.AMPowerUp = AMPowerUps.Instantiate(powerupName)
+	self.AMPowerUp:Take(self)
+end
+
+function AMBoat:UnsetPowerUp()
+	self.AMPowerUp = nil
+end
+
+//GETTER
+
 function AMBoat:GetPlayer()
 	return self.AMPlayer
 end
 
 function AMBoat:GetEntity()
 	return self.Entity
+end
+
+function AMBoat:GetPowerUp()
+	return self.AMPowerUp
 end
 
 function AMBoat:GetSmokeEntity()
@@ -77,6 +94,10 @@ function AMBoat:CheckKeys()
 		self.Mods["shift"]:Activate(self.AMPlayer, self)
 	elseif self.AMPlayer:CheckKey(IN_JUMP) then
 		self.Mods["space"]:Activate(self.AMPlayer, self)
+	elseif self.AMPlayer:CheckKey(IN_WALK) then
+		if self.AMPowerUp then
+			AMPowerUps.Use(self:GetPowerUp(), self)
+		end
 	end
 end
 

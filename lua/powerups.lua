@@ -4,70 +4,86 @@ AMPowerUp_mt = {  __index = function(t, k) return AMPowerUps.PowerUps[t.Name][k]
 function AMPowerUp.New()
 	local self = {}
 	setmetatable(self, AMPowerUp_mt)
-	table.insert(AMPowerUps.Instances, self)
-
+	self.InRun = false
+	self.Amount = 0
 
 	return self
 end
 
-function AMPowerUp:Take()
-	print('asd')
+function AMPowerUp:Run(amBoat)
+end 
+
+function AMPowerUp:End(amBoat)
 end
 
-function AMPowerUp:Use()
-	local boat = self.Boat
-	self:Run()
-	self = nil
+function AMPowerUp:Take(amBoat)
 end
 
 function AMPowerUp:Think()
-
 end
 
 function AMPowerUp:Tick()
-
 end
 
-
 ///////////////////
 ///////////////////
+function AMPowerUps.Instantiate(name)
+	local powerup 	= AMPowerUp.New()
+	powerup.Name  	= AMPowerUps.PowerUps[name].Name
+	powerup.Amount	= AMPowerUps.PowerUps[name].PAmount
 
-function AMPowerUps.Instantiate(name, boat)
-	local amBoat = boat.AMBoat
-	if amBoat then
-		local powerup 	= AMPowerUp.New()
-		powerup.Boat  	= boat
-		powerup.AMBoat	= amBoad
-		powerup.Name  	= AMPowerUps.PowerUps[name].Name
+	return powerup
+end
 
-		powerup:Take()
-		if powerup.UseOnTake then
-			powerup:Use()
-		end
+function AMPowerUps.Use(amPowerup, amBoat)
+	if not amPowerup.InRun then
+		local boat = amBoat:GetEntity()
+		amPowerup.InRun = true
+		amPowerup:Run(amBoat)
 
-		return powerup
+		timer.Create("AMPowerUp_Countdown_"..amBoat:GetEntity():EntIndex(), amPowerup.Duration, 1, function()
+			amPowerup.Amount = amPowerup.Amount - 1
+			amPowerup.InRun = false
+			amPowerup:End(amBoat)
+
+			if amPowerup.Amount <= 0 then
+				amBoat:UnsetPowerUp()
+			end
+		end)
 	end
 end
+
+
+
  
 function AMPowerUps.GetRandom()
 	local Keys	= table.GetKeys(AMPowerUps.PowerUps)
-	local id  	= math.random(1, #AMPowerUps.PowerUps)
+	local id  	= math.random(1, #Keys)
 
 	return AMPowerUps.PowerUps[Keys[id]]
 end
 
 function AMPowerUps.Register(powerup)
 	AMPowerUps.PowerUps[powerup.Name] = powerup
-	PrintTable(AMPowerUps)
 end
 
 
 local hooklist = {"Tick", "Think"}
 
 for _,h in pairs(hooklist) do
-	for _,pu in pairs(AMPowerUps.Instances) do
-		hook.Add(h, "AMPowerUps_"..h, function(...)
-			pu[h](...)
-		end)
-	end
+	hook.Add(h, "AMPowerUps_"..h, function(...)
+		for _,ply in ipairs(player.GetAll()) do
+			if ply.AMPlayer then
+				local boat = ply.AMPlayer:GetAirboat()
+				if boat then
+					local powerup = boat:GetPowerUp()
+					if powerup then
+						if powerup.InRun then
+							powerup[h](boat, ...)
+						end
+					end
+				end
+			end
+		end
+	end)
 end
