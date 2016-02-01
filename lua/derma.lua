@@ -53,7 +53,7 @@ else
 		shiftButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
 		shiftButton.DoClick = function()
 			local submenu = DermaMenu()
-			for k,v in pairs(mods) do
+			for _,v in ipairs(mods) do
 				if AMMods.Mods[v].Type == "shift" then
 					submenu:AddOption(AMMods.Mods[v].FullName, function()
 						LocalPlayer():ConCommand("am_mod " .. v)
@@ -70,7 +70,7 @@ else
 		spaceButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
 		spaceButton.DoClick = function()
 			local submenu = DermaMenu()
-			for k,v in pairs(mods) do
+			for _,v in ipairs(mods) do
 				if AMMods.Mods[v].Type == "space" then
 					submenu:AddOption(AMMods.Mods[v].FullName, function()
 						LocalPlayer():ConCommand("am_mod " .. v)
