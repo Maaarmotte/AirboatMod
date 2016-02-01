@@ -135,7 +135,7 @@ function AMBoat:OnDeath(attacker)
 	end)
 end
 
-function AMBoat.CollisionCallback(boat, data)	
+function AMBoat.CollisionCallback(boat, data)
 	-- Be sure that this boat is valid and currently playing
 	local self = boat.AMBoat
 	if not self or not boat:IsValid() or not self:IsPlaying() then return end

@@ -16,7 +16,12 @@ include("boat.lua")
 include("player.lua")
 include("derma.lua")
 include("mods.lua")
+include("powerups.lua")
 
 for _,f in pairs(file.Find("mods/*.lua", "LUA")) do
 	include("mods/" .. f)
+end
+ 
+for _,f in pairs(file.Find("powerups/*.lua", "LUA")) do
+	include("powerups/" .. f)
 end
