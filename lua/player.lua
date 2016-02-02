@@ -1,10 +1,11 @@
 AMPlayer = {}
 AMPlayer_mt = { __index = AMPlayer }
 
+-- Constructor
 function AMPlayer.New(ply)
 	local self = {}
 	setmetatable(self, AMPlayer_mt)
-	self.Player = ply
+	self.Entity = ply
 	self.AMBoat = nil
 	self.Health = 15
 	self.Playing = false
@@ -14,24 +15,39 @@ function AMPlayer.New(ply)
 	return self
 end
 
-function AMPlayer:GetEntity()
-	return self.Player
+-- Static methods
+function AMPlayer.GetPlayer(ply)
+	if ply and ply:IsValid() then
+		if not ply.AMPlayer then
+			ply.AMPlayer = AMPlayer.New(ply)
+		end
+		return ply.AMPlayer
+	end
 end
 
-function AMPlayer:SetAirboat(amBoat)
-	self.AMBoat = amBoat
+-- Getters
+function AMPlayer:GetEntity()
+	if self.Entity and self.Entity:IsValid() and self.Entity:IsPlayer() then
+		return self.Entity
+	end
 end
 
 function AMPlayer:GetAirboat()
 	return self.AMBoat
 end
 
+-- Setters
+function AMPlayer:SetAirboat(amBoat)
+	self.AMBoat = amBoat
+end
+
+-- Members methods
 function AMPlayer:CheckKey(key)
-	return self.Player:KeyDown(key)
+	return self.Entity:KeyDown(key)
 end
 
 function AMPlayer:Respawn()
-	self.Player:Spawn()
+	self.Entity:Spawn()
 end
 
 function AMPlayer:SetPlaying(value)

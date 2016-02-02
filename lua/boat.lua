@@ -1,6 +1,9 @@
+util.AddNetworkString("am_boat_update")
+
 AMBoat = {}
 AMBoat_mt = { __index = AMBoat }
 
+-- Constructor
 function AMBoat.New()
 	local self      	= {}
 	self.Entity     	= nil
@@ -16,8 +19,34 @@ function AMBoat.New()
 	return self
 end
 
-//SETTER
+-- Static methods
+function AMBoat.GetBoat(boat)
+	if boat and boat:IsValid() then
+		if not boat.AMBoat then
+			boat.AMBoat = AMBoat.New()
+		end
+		return boat.AMBoat
+	end
+end
 
+-- Getters
+function AMBoat:GetPlayer()
+	return self.AMPlayer
+end
+
+function AMBoat:GetEntity()
+	return self.Entity
+end
+
+function AMBoat:GetPowerUp()
+	return self.AMPowerUp
+end
+
+function AMBoat:GetSmokeEntity()
+	return self.SmokeEntity
+end
+
+-- Setters
 function AMBoat:SetPlayer(amPly)
 	self.AMPlayer = amPly
 end
@@ -35,24 +64,7 @@ function AMBoat:UnsetPowerUp()
 	self.AMPowerUp = nil
 end
 
-//GETTER
-
-function AMBoat:GetPlayer()
-	return self.AMPlayer
-end
-
-function AMBoat:GetEntity()
-	return self.Entity
-end
-
-function AMBoat:GetPowerUp()
-	return self.AMPowerUp
-end
-
-function AMBoat:GetSmokeEntity()
-	return self.SmokeEntity
-end
-
+-- Member methods
 function AMBoat:Spawn()
 	if not self.AMPlayer then
 		print("[Airboat] Can't spawn airboat without owner !")
@@ -84,12 +96,6 @@ function AMBoat:Spawn()
 	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
 end
 
-function AMBoat:Tick()
-	if self:IsPlaying() then
-		self:CheckKeys()
-	end
-end
-
 function AMBoat:CheckKeys()
 	if self.AMPlayer:CheckKey(IN_SPEED) then
 		self.Mods["shift"]:Activate(self.AMPlayer, self)
@@ -114,6 +120,7 @@ function AMBoat:Damage(amount, attacker)
 		if self.Health == 0 then
 			self:OnDeath(attacker)
 		end
+		self:Synchronize()
 	end
 end
 
@@ -127,13 +134,15 @@ function AMBoat:AddInvulnerableTime(value)
 	end)
 end
 
-function AMBoat:OnDeath(attacker)
-	-- Kill the player
-	self.AMPlayer:GetEntity():Kill()
+function AMBoat:Synchronize()
+	if self.AMPlayer and self.AMPlayer:GetEntity() then
+		net.Start("am_boat_update")
+			net.WriteTable({ Entity=self.Entity, Health=self.Health, Player=self.AMPlayer:GetEntity(), Playing=self:IsPlaying() })
+		net.Send(self.AMPlayer:GetEntity())
+	end
+end
 
-	-- Play effects and sounds
-	local other = attacker.AMBoat
-	
+function AMBoat:ExplodeEffect()
 	self.Entity:EmitSound("items/cart_explode.wav")
 	self.Entity:EmitSound("weapons/demo_charge_hit_flesh_range1.wav")
 	
@@ -142,6 +151,17 @@ function AMBoat:OnDeath(attacker)
 	ParticleEffectAttach("asplode_hoodoo_embers", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
 	ParticleEffectAttach("asplode_hoodoo_dust", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
 	ParticleEffectAttach("asplode_hoodoo", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
+end
+
+-- Hooks
+function AMBoat:OnDeath(attacker)
+	-- Kill the player
+	self.AMPlayer:GetEntity():Kill()
+
+	-- Play effects and sounds
+	local other = attacker.AMBoat
+	
+	self:ExplodeEffect()
 	
 	if other and other:IsPlaying() then
 		other:GetEntity():EmitSound("ambient/bumper_car_cheer" .. math.random(3) .. ".wav")
@@ -162,6 +182,13 @@ function AMBoat:OnDeath(attacker)
 	end)
 end
 
+function AMBoat:Tick()
+	if self:IsPlaying() then
+		self:CheckKeys()
+	end
+end
+
+-- Callbacks
 function AMBoat.CollisionCallback(boat, data)
 	-- Be sure that this boat is valid and currently playing
 	local self = boat.AMBoat

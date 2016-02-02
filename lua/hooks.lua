@@ -26,6 +26,10 @@ hook.Add("PlayerLeaveVehicle", "Airboat", function(ply, boat)
 	local amPlayer = ply.AMPlayer
 	if amPlayer then
 		amPlayer:SetPlaying(false)
+
+		if amPlayer:GetAirboat() then
+			timer.Simple(0.1, function() amPlayer:GetAirboat():Synchronize() end)
+		end
 	end
 end)
 
@@ -55,6 +59,8 @@ concommand.Add("am_play", function(ply)
 	
 	amBoat:AddInvulnerableTime(3)
 	amBoat:SetHealth(15)
+
+	amBoat:Synchronize()
 	
 	if not AMMain.Spawns[game.GetMap()] then return end
 	

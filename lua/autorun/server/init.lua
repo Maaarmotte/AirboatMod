@@ -3,6 +3,9 @@ AddCSLuaFile("autorun/client/cl_init.lua")
 AddCSLuaFile("utils.lua")
 AddCSLuaFile("mods.lua")
 AddCSLuaFile("derma.lua")
+AddCSLuaFile("cl_player.lua")
+AddCSLuaFile("cl_boat.lua")
+AddCSLuaFile("cl_hud.lua")
 
 for _,file in pairs(file.Find("mods/*.lua", "LUA")) do
 	AddCSLuaFile("mods/" .. file)
