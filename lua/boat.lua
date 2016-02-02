@@ -58,10 +58,12 @@ end
 function AMBoat:SetPowerUp(powerupName)
 	self.AMPowerUp = AMPowerUps.Instantiate(powerupName)
 	AMPowerUps.Initalite(self.AMPowerUp, self)
+	self:Synchronize()
 end
 
 function AMBoat:UnsetPowerUp()
 	self.AMPowerUp = nil
+	self:Synchronize()
 end
 
 -- Member methods
@@ -99,9 +101,9 @@ end
 function AMBoat:CheckKeys()
 	if self.AMPlayer:CheckKey(IN_SPEED) then
 		self.Mods["shift"]:Activate(self.AMPlayer, self)
-	elseif self.AMPlayer:CheckKey(IN_JUMP) then
+	if self.AMPlayer:CheckKey(IN_JUMP) then
 		self.Mods["space"]:Activate(self.AMPlayer, self)
-	elseif self.AMPlayer:CheckKey(IN_WALK) then
+	if self.AMPlayer:CheckKey(IN_WALK) then
 		if self.AMPowerUp then
 			AMPowerUps.Use(self:GetPowerUp(), self)
 		end
@@ -136,8 +138,12 @@ end
 
 function AMBoat:Synchronize()
 	if self.AMPlayer and self.AMPlayer:GetEntity() then
+		local powerup = "None"
+		if self:GetPowerUp() then
+			powerup = self:GetPowerUp().FullName or "None"
+		end
 		net.Start("am_boat_update")
-			net.WriteTable({ Entity=self.Entity, Health=self.Health, Player=self.AMPlayer:GetEntity(), Playing=self:IsPlaying() })
+			net.WriteTable({ Entity=self.Entity, Health=self.Health, Player=self.AMPlayer:GetEntity(), Playing=self:IsPlaying(), PowerUp=powerup })
 		net.Send(self.AMPlayer:GetEntity())
 	end
 end
@@ -213,7 +219,7 @@ function AMBoat.CollisionCallback(boat, data)
 		otherVel = data.TheirOldVelocity:Dot(collisionAxis)
 	end
 	
-	-- Apply the damage if the velocity is big enough	
+	-- Apply the damage if the velocity is big enough
 	if math.max(selfVel, otherVel) > 500 then
 		if otherEntity:IsWorld() then
 			self:Damage(5, otherEntity)

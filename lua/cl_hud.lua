@@ -55,11 +55,9 @@ function AMHud.Build()
 		surface.SetTextPos(12, 10)
 		surface.DrawText("= Airboat Mod v1.0 =")
 		
-		-- Title
-		surface.SetFont("am_hud_title")
-		surface.SetTextColor(255, 255, 255, 100)
+		-- Points
 		surface.SetTextPos(12, 28)
-		surface.DrawText("Total points: 0")
+		surface.DrawText("- Total points: 0")
 		
 		-- Health bar
 		local hx = 10
@@ -81,8 +79,18 @@ function AMHud.Build()
 		
 		-- Power up
 		surface.SetTextPos(11, 75)
-		surface.DrawText("- PowerUp: None")
+		surface.DrawText("- PowerUp: " .. amBoat:GetPowerUp().FullName)
 	end
 end
+
+-- Don't draw undo list when playing
+hook.Add("HUDShouldDraw", "am_disable_papate_hud", function(name)
+	if name == "PHudUndoList" then
+		if AMPlayer.GetPlayer(LocalPlayer()) and AMPlayer.GetPlayer(LocalPlayer()):GetAirboat() and AMPlayer.GetPlayer(LocalPlayer()):GetAirboat():IsPlaying() then
+			return false
+		end
+	end
+end)
+
 
 hook.Add("InitPostEntity", "am_hud_build", AMHud.Build)

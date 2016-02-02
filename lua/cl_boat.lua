@@ -8,6 +8,7 @@ function AMBoat.New()
 	self.Health     	= 15
 	self.Playing 		= false
 	self.AMPlayer 		= nil
+	self.AMPowerUp		= { FullName="None" }
 	setmetatable(self, AMBoat_mt)
 
 	return self
@@ -40,6 +41,10 @@ function AMBoat:GetEntity()
 	return self.Entity
 end
 
+function AMBoat:GetPowerUp()
+	return self.AMPowerUp
+end
+
 -- Setters
 function AMBoat:SetPlayer(amPly)
 	self.AMPlayer = amPly
@@ -53,6 +58,10 @@ function AMBoat:SetPlaying(bool)
 	self.Playing = bool
 end
 
+function AMBoat:SetPowerUp(name)
+	self.AMPowerUp.FullName = name
+end
+
 -- Hooks
 net.Receive("am_boat_update", function(len)
 	local data = net.ReadTable()
@@ -63,6 +72,7 @@ net.Receive("am_boat_update", function(len)
 		amBoat:SetPlayer(amPlayer)
 		amBoat:SetHealth(data.Health)
 		amBoat:SetPlaying(data.Playing)
+		amBoat:SetPowerUp(data.PowerUp)
 
 		amPlayer:SetAirboat(amBoat)
 	end

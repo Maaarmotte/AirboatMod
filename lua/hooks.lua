@@ -47,6 +47,7 @@ hook.Add("EntityTakeDamage", "Airboat", function(ply, dmg)
 	end
 end)
 
+-- Concommands
 concommand.Add("am_play", function(ply)
 	local amPlayer = ply.AMPlayer
 	if not amPlayer then return end
