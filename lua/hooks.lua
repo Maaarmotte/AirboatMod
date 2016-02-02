@@ -12,12 +12,16 @@ hook.Add("CanPlayerEnterVehicle", "Airboat", function(ply, boat)
 	local amPlayer = ply.AMPlayer
 	local amBoat = boat.AMBoat
 	
-	if amBoat and amBoat:GetEntity():IsValid() and amPlayer and amPlayer:GetEntity():IsValid() and ply == amPlayer:GetEntity() then
-		if amPlayer:GetPlaying() then
-			return true
+	if amBoat and amBoat:GetEntity():IsValid() and amPlayer and amPlayer:GetEntity():IsValid() then
+		if amBoat:GetPlayer() and ply == amBoat:GetPlayer():GetEntity() then
+			if amPlayer:GetPlaying() then
+				return true
+			end
+			AMMenu.SendMenu(amPlayer, amBoat)
+			return false
+		else
+			return false
 		end
-		AMMenu.SendMenu(amPlayer, amBoat)
-		return false
 	end
 end)
 
