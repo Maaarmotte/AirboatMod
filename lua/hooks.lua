@@ -77,7 +77,7 @@ concommand.Add("am_play", function(ply)
 	local areaV1 = AMMain.Spawns[game.GetMap()][1]
 	local areaV2 = AMMain.Spawns[game.GetMap()][2]
 	local pos = areaV1 + rand*(areaV2 - areaV1)
-	pos.z = (areaV1.z + areaV2.z)/4
+	pos.z = (areaV1.z + areaV2.z)/2
 	boat:SetPos(pos)
 end)
 
