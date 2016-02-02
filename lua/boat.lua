@@ -204,6 +204,7 @@ function AMBoat.CollisionCallback(boat, data)
 	-- Compute the damage this boat is taking
 	local selfVel = 0
 	local otherVel = 0
+
 	if otherEntity:IsWorld() then
 		selfVel = data.OurOldVelocity:Dot(data.HitNormal)
 	elseif other and otherEntity:IsValid() and other:IsPlaying() then
@@ -214,14 +215,23 @@ function AMBoat.CollisionCallback(boat, data)
 	
 	-- Apply the damage if the velocity is big enough	
 	if math.max(selfVel, otherVel) > 500 then
-		if selfVel > otherVel and not otherEntity:IsWorld() then
-			self:Damage(1, otherEntity)
-		else
+		if otherEntity:IsWorld() then
 			self:Damage(5, otherEntity)
+		else
+			if selfVel > otherVel then
+				self:Damage(1, otherEntity)
+				other:Damage(5, boat)
+			else
+				self:Damage(5, otherEntity)
+				other:Damage(1, boat)
+
+				-- Add a small invulnerability time if hit
+				self.LastBump = CurTime()
+				other.LastBump = CurTime()
+
+				otherEntity:EmitSound("weapons/bumper_car_hit" .. math.random(1, 8) .. ".wav")
+			end
 		end
 		boat:EmitSound("weapons/bumper_car_hit" .. math.random(1, 8) .. ".wav")
-		
-		-- Add a small invulnerability time if hit
-		self.LastBump = CurTime()
 	end
 end
