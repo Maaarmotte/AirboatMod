@@ -8,6 +8,13 @@ for _,file in pairs(file.Find("mods/*.lua", "LUA")) do
 	AddCSLuaFile("mods/" .. file)
 end
 
+if not AMMain then AMMain = {} end
+AMMain.Spawns = {}
+
+AMPowerUps          	= {}
+AMPowerUps.PowerUps 	= {}
+AMPowerUps.Instances	= {}
+
 -- Run the files
 include("utils.lua")
 include("main.lua")
@@ -16,12 +23,6 @@ include("boat.lua")
 include("player.lua")
 include("derma.lua")
 include("mods.lua")
- 
-
-AMPowerUps          	= {}
-AMPowerUps.PowerUps 	= {}
-AMPowerUps.Instances	= {}
-
 include("powerups.lua")
 
 for _,f in pairs(file.Find("mods/*.lua", "LUA")) do

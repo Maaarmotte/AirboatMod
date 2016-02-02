@@ -55,6 +55,8 @@ if SERVER then
 			return 
 		end
 
+		self.effect:SetPos(self:LocalToWorld(Vector(0,0,50)) + self.powerup.ModelOffset)
+		self.effect:SetAngles(Angle(0,CurTime()*60*2,0))
 		self.effect:SetNoDraw(false)
 		self.effect:SetModel(self.powerup.Model)
 		e:SetModelScale(self.powerup.ModelScale, 0)
@@ -63,7 +65,23 @@ if SERVER then
 	end
 
 	function ENT:TakePowerUp(amBoat)
+		local cantake = hook.Call('AMPowerUp_Take', GM, amBoat) or true
+		
+		if not (amBoat.AMPowerUp and amBoat.AMPowerUp.Name) then
+			if cantake then
+				amBoat:SetPowerUp(self.powerup.Name)
 
+				sound.Play(Sound("garrysmod/balloon_pop_cute.wav"), self:GetPos(), 75)
+				self.powerup = nil
+				self.effect:SetNoDraw(true)
+				
+				timer.Simple(10, function()
+					if self then
+						self:InitPowerUp()
+					end
+				end)
+			end
+		end
 	end
 
 
@@ -90,24 +108,9 @@ if SERVER then
 		if ent.AMBoat and ent.AMBoat:IsPlaying() then
 			if self.powerup then
 				local amBoat = ent.AMBoat
+				self:TakePowerUp(amBoat)
 
-				if not (amBoat.AMPowerUp and amBoat.AMPowerUp.Name) then
-					local cantake = hook.Call('AMPowerUp_Take', GM, amBoat) or true
-
-					if cantake then
-						amBoat:SetPowerUp(self.powerup.Name)
-
-						sound.Play(Sound("garrysmod/balloon_pop_cute.wav"), self:GetPos(), 75)
-						self.powerup = nil
-						self.effect:SetNoDraw(true)
-						
-						timer.Simple(10, function()
-							if self then
-								self:InitPowerUp()
-							end
-						end)
-					end
-				end
+				
 			end
 		end
 	end

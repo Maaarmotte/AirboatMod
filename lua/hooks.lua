@@ -35,7 +35,7 @@ hook.Add("EntityTakeDamage", "Airboat", function(ply, dmg)
 	local amPlayer = ply.AMPlayer
 
 	if amPlayer:GetPlaying() then
-		dmg:SetDamage(0)
+		return true
 	end
 end)
 
@@ -56,7 +56,7 @@ concommand.Add("am_play", function(ply)
 	amBoat:AddInvulnerableTime(3)
 	amBoat:SetHealth(15)
 	
-	if not  AMMain.Spawns[game.GetMap()] then return end
+	if not AMMain.Spawns[game.GetMap()] then return end
 	
 	-- Move the boat to a random spot in the area
 	local rand = VectorRand()

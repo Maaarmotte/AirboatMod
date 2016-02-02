@@ -20,7 +20,7 @@ else
 	AMMenu.MainFrame = nil
 	
 	function AMMenu.Display(active, mods)
-		PrintTable(mods)
+		-- PrintTable(mods)
 		
 		if not mods then
 			print("[AMBoat] No mods for this player !")

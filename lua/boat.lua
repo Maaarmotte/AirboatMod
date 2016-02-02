@@ -12,6 +12,7 @@ function AMBoat.New()
 	self.LastBump   	= 0
 	self.Health     	= 15
 	setmetatable(self, AMBoat_mt)
+
 	return self
 end
 
@@ -27,7 +28,7 @@ end
 
 function AMBoat:SetPowerUp(powerupName)
 	self.AMPowerUp = AMPowerUps.Instantiate(powerupName)
-	self.AMPowerUp:Take(self)
+	AMPowerUps.Initalite(self.AMPowerUp, self)
 end
 
 function AMBoat:UnsetPowerUp()
@@ -63,7 +64,7 @@ function AMBoat:Spawn()
 	self.Entity = ents.Create("prop_vehicle_airboat")
 	self.Entity:SetModel("models/airboat.mdl")
 	self.Entity:SetPos(AMUtils.AimPosClamp(self.AMPlayer:GetEntity(), 250))
-	self.Entity:CPPISetOwner(self.AMPlayer:GetEntity())
+	if CPPI then self.Entity:CPPISetOwner(self.AMPlayer:GetEntity()) end
 	self.Entity:Spawn()
 	self.Entity:Activate()
 	self.Entity:AddCallback("PhysicsCollide", AMBoat.CollisionCallback)
@@ -106,9 +107,13 @@ function AMBoat:IsPlaying()
 end
 
 function AMBoat:Damage(amount, attacker)
-	self.Health = math.max(0, self.Health - amount)
-	if self.Health == 0 then
-		self:OnDeath(attacker)
+	local amount = hook.Call("AMBoat_Damage", GM, self, amount, attacker.AMBoat) or amount
+
+	if not blockdmg then
+		self.Health = math.max(0, self.Health - amount)
+		if self.Health == 0 then
+			self:OnDeath(attacker)
+		end
 	end
 end
 
