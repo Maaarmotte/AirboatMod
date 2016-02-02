@@ -101,8 +101,10 @@ end
 function AMBoat:CheckKeys()
 	if self.AMPlayer:CheckKey(IN_SPEED) then
 		self.Mods["shift"]:Activate(self.AMPlayer, self)
+	end
 	if self.AMPlayer:CheckKey(IN_JUMP) then
 		self.Mods["space"]:Activate(self.AMPlayer, self)
+	end
 	if self.AMPlayer:CheckKey(IN_WALK) then
 		if self.AMPowerUp then
 			AMPowerUps.Use(self:GetPowerUp(), self)
@@ -223,6 +225,7 @@ function AMBoat.CollisionCallback(boat, data)
 	if math.max(selfVel, otherVel) > 500 then
 		if otherEntity:IsWorld() then
 			self:Damage(5, otherEntity)
+			self.LastBump = CurTime()
 		else
 			if selfVel > otherVel then
 				self:Damage(1, otherEntity)
