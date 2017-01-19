@@ -24,6 +24,9 @@ function mod:Mount(amBoat)
 end
 
 function mod:Unmount(amBoat)
+	if IsValid(self.Turret) then
+		self.Turret:Remove()
+	end
 end
 
 function mod:Think(amBoat)

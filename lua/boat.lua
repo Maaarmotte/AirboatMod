@@ -106,6 +106,14 @@ function AMBoat:MountMods()
 	end
 end
 
+function AMBoat:UnmountMods()
+	if IsValid(self.Entity) then
+		for _,v in pairs(self.Mods) do
+			v:Unmount(self)
+		end
+	end
+end
+
 function AMBoat:CheckKeys()
 	if self.AMPlayer:CheckKey(IN_SPEED) then
 		self.Mods["shift"]:Activate(self.AMPlayer, self)
