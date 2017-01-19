@@ -98,6 +98,14 @@ function AMBoat:Spawn()
 	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
 end
 
+function AMBoat:MountMods()
+	if IsValid(self.Entity) then
+		for _,v in pairs(self.Mods) do
+			v:Mount(self)
+		end
+	end
+end
+
 function AMBoat:CheckKeys()
 	if self.AMPlayer:CheckKey(IN_SPEED) then
 		self.Mods["shift"]:Activate(self.AMPlayer, self)
@@ -193,6 +201,10 @@ end
 function AMBoat:Tick()
 	if self:IsPlaying() then
 		self:CheckKeys()
+
+		for _,mod in pairs(self.Mods) do
+			mod:Think(self)
+		end
 	end
 end
 

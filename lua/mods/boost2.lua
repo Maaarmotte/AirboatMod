@@ -5,6 +5,13 @@ mod.FullName = "Longer Slower Boost"
 mod.Delay = 5
 mod.Type = "shift"
 
+function mod:Mount(amBoat)
+	print("[AM] Mounting mod: " .. mod.Name)
+end
+
+function mod:Unmount(amBoat)
+end
+
 function mod:Run(amPly, amBoat)
 	local boat = amBoat:GetEntity()
 	local physobj = boat:GetPhysicsObject()

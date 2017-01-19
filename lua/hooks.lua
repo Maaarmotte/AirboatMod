@@ -64,7 +64,8 @@ concommand.Add("am_play", function(ply)
 	
 	amBoat:AddInvulnerableTime(3)
 	amBoat:SetHealth(15)
-
+	amBoat:MountMods()
+	
 	amBoat:Synchronize()
 	
 	if not AMMain.Spawns[game.GetMap()] then return end
@@ -94,5 +95,7 @@ concommand.Add("am_mod", function(ply, cmd, args)
 	if mod and table.HasValue(amPlayer.Mods, name) then
 		local key = mod.Type
 		amBoat.Mods[key] = AMMods.Instantiate(name)
+	else
+		print("[AM] Player " .. ply:Name() .. " doesn't have access to " .. mod)
 	end
 end)
