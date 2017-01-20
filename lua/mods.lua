@@ -15,6 +15,7 @@ function AMMod.New()
 	self.Type = "none"
 	self.Mounted = false
 	self.Data = nil
+	self.Props = {}
 	return self
 end
 
@@ -23,6 +24,12 @@ function AMMod:Activate(amPly, amBoat)
 		self:Run(amPly, amBoat)
 		self.LastActivation = CurTime()	
 	end
+end
+
+function AMMod:MountHolo(amBoat, model, pos, ang, scale, material, color)
+	local ent = amBoat:ParentHolo(model, pos, ang, scale, material, color)
+	table.insert(self.Props, ent)
+	return ent
 end
 
 -- Will be overrided !
@@ -58,6 +65,14 @@ function AMMods.Instantiate(name)
 	mod.Unmount = function(self, amBoat)
 		if self.Mounted then
 			self.Mounted = false
+
+			-- Remove props/holograms assocaited to the mod
+			for _,prop in pairs(self.Props) do
+				if IsValid(prop) then
+					prop:Remove()
+				end
+			end
+
 			return AMMods.Mods[name].Unmount(self, amBoat)
 		end
 	end

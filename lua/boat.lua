@@ -67,6 +67,26 @@ function AMBoat:UnsetPowerUp()
 end
 
 -- Member methods
+function AMBoat:ParentHolo(model, pos, ang, scale, material, color)
+	if not color then color = Color(255, 255, 255, 255) end
+
+	if IsValid(self.Entity) then
+		local ent = ents.Create("prop_physics")
+		ent:SetModel(model)
+		ent:SetMoveType(MOVETYPE_NONE)
+		ent:PhysicsInit(SOLID_NONE)
+		ent:SetPos(self.Entity:LocalToWorld(pos))
+		ent:SetAngles(self.Entity:LocalToWorldAngles(ang))
+		ent:SetModelScale(scale, 0)
+		ent:SetMaterial(material)
+		ent:SetColor(color)
+		ent:SetParent(self.Entity)
+		ent:Spawn()
+		ent:Activate()
+		return ent
+	end
+end
+
 function AMBoat:Spawn()
 	if not self.AMPlayer then
 		print("[Airboat] Can't spawn airboat without owner !")
