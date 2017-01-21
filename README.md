@@ -14,7 +14,7 @@ mouse 1 :
   - flamethrower
 
 
-[POWER UP] (en cours)
+[POWER UP]
 disponible dans les caisses, utilisables via mouse 2
 
   - defense : réduit les dégats reçus
