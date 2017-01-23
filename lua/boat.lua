@@ -38,6 +38,10 @@ function AMBoat:GetEntity()
 	return self.Entity
 end
 
+function AMBoat:GetHealth()
+	return self.Health
+end
+
 function AMBoat:GetPowerUp()
 	return self.AMPowerUp
 end
@@ -141,6 +145,9 @@ function AMBoat:CheckKeys()
 	if self.AMPlayer:CheckKey(IN_JUMP) then
 		self.Mods["space"]:Activate(self.AMPlayer, self)
 	end
+	if self.AMPlayer:CheckKey(IN_ATTACK) then
+		self.Mods["mouse1"]:Activate(self.AMPlayer, self)
+	end
 	if self.AMPlayer:CheckKey(IN_WALK) then
 		if self.AMPowerUp then
 			AMPowerUps.Use(self:GetPowerUp(), self)
@@ -155,7 +162,7 @@ end
 function AMBoat:Damage(amount, attacker)
 	local amount = hook.Call("AMBoat_Damage", GM, self, amount, attacker.AMBoat) or amount
 
-	if not blockdmg then
+	if not blockdmg and self:IsPlaying() and self.Health > 0 then
 		self.Health = math.max(0, self.Health - amount)
 		if self.Health == 0 then
 			self:OnDeath(attacker)

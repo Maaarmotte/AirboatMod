@@ -13,3 +13,4 @@ end
 -- Load the particles we need!
 game.AddParticles("particles/scary_ghost.pcf")
 game.AddParticles("particles/smoke_blackbillow.pcf")
+game.AddParticles("particles/flamethrower.pcf")
