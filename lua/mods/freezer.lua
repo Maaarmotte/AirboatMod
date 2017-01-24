@@ -1,13 +1,15 @@
 local mod = {}
 
-mod.Name = "flamethrower"
-mod.FullName = "Flamethrower"
+mod.Name = "freezer"
+mod.FullName = "Freezer"
 mod.Delay = 0
 mod.Type = "mouse1"
 mod.Range = 375
 mod.RangeSqr = mod.Range*mod.Range
-mod.Damage = 0.5
+mod.Damage = 0.25
 mod.DamageDelay = 0.25
+mod.MaxSpeed = 150
+mod.SlowFactor = 0.05
 
 mod.Anchor = Vector(18.026478, 27.837114, 47.955334)
 mod.Turret = nil
@@ -21,7 +23,7 @@ sound.Add({
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 80,
-	pitch = 100,
+	pitch = 200,
 	sound = "weapons/flame_thrower_start.wav"
 })
 
@@ -30,7 +32,7 @@ sound.Add({
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 80,
-	pitch = 100,
+	pitch = 200,
 	sound = "weapons/flame_thrower_loop.wav"
 })
 
@@ -39,8 +41,8 @@ sound.Add({
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 80,
-	pitch = 100,
-	sound = "weapons/3rd_degree_hit_01.wav"
+	pitch = 150,
+	sound = "weapons/icicle_freeze_victim_01.wav"
 })
 
 function mod:Mount(amBoat)
@@ -86,13 +88,13 @@ function mod:Run(amPly, amBoat)
 	local t = CurTime()
 
 	if not self.Burning then
-		ParticleEffectAttach("flamethrower", PATTACH_ABSORIGIN_FOLLOW, self.Flames, 0)
+		ParticleEffectAttach("flamethrower_snow", PATTACH_ABSORIGIN_FOLLOW, self.Flames, 0)
 		self.Flames:EmitSound("flamethrower_start")
 		self.Burning = true
 		self.Start = t
 	end
 
-	if not self.Loop and t - self.Start > 3.6 then
+	if not self.Loop and t - self.Start > 1.8 then
 		self.Flames:EmitSound("flamethrower_loop")
 		self.Loop = true
 	end
@@ -115,6 +117,12 @@ function mod:Run(amPly, amBoat)
 			target.AMBoat:Damage(self.Damage, amBoat)
 			target:EmitSound("flamethrower_hit")
 			self.LastDamage = t
+			timer.Create("slow" .. tostring(self), 0.01, 132, function()
+				local physobj = target:GetPhysicsObject()
+				if IsValid(physobj) then
+					physobj:SetVelocity((1 - self.SlowFactor)*physobj:GetVelocity())
+				end
+			end)
 		end
 	end
 
