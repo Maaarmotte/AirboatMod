@@ -9,7 +9,7 @@ function AMPlayer.New(ply)
 	self.AMBoat = nil
 	self.Health = 15
 	self.Playing = false
-	self.Mods = { "boost", "jump", "boost2", "flamethrower" }
+	self.Mods = { "boost", "jump", "boost2", "flamethrower", "freezer" }
 	ply.AMPlayer = self
 	
 	return self

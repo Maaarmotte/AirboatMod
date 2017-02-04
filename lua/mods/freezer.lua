@@ -19,7 +19,7 @@ mod.Loop = false
 mod.LastDamage = 0
 
 sound.Add({
-	name = "flamethrower_start",
+	name = "freezer_start",
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 80,
@@ -28,7 +28,7 @@ sound.Add({
 })
 
 sound.Add({
-	name = "flamethrower_loop",
+	name = "freezer_loop",
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 80,
@@ -37,7 +37,7 @@ sound.Add({
 })
 
 sound.Add({
-	name = "flamethrower_hit",
+	name = "freezer_hit",
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 80,
@@ -79,8 +79,8 @@ function mod:StopFlames()
 	self.Loop = false
 	if IsValid(self.Flames) then
 		self.Flames:StopParticles()
-		self.Flames:StopSound("flamethrower_start")
-		self.Flames:StopSound("flamethrower_loop")
+		self.Flames:StopSound("freezer_start")
+		self.Flames:StopSound("freezer_loop")
 	end
 end
 
@@ -89,13 +89,13 @@ function mod:Run(amPly, amBoat)
 
 	if not self.Burning then
 		ParticleEffectAttach("flamethrower_snow", PATTACH_ABSORIGIN_FOLLOW, self.Flames, 0)
-		self.Flames:EmitSound("flamethrower_start")
+		self.Flames:EmitSound("freezer_start")
 		self.Burning = true
 		self.Start = t
 	end
 
 	if not self.Loop and t - self.Start > 1.8 then
-		self.Flames:EmitSound("flamethrower_loop")
+		self.Flames:EmitSound("freezer_loop")
 		self.Loop = true
 	end
 
@@ -115,7 +115,7 @@ function mod:Run(amPly, amBoat)
 
 		if target and target.AMBoat and target.AMBoat:GetHealth() > 0 and (amBoat:GetEntity():GetPos() - target:GetPos()):LengthSqr() < self.RangeSqr then
 			target.AMBoat:Damage(self.Damage, amBoat)
-			target:EmitSound("flamethrower_hit")
+			target:EmitSound("freezer_hit")
 			self.LastDamage = t
 			timer.Create("slow" .. tostring(self), 0.01, 132, function()
 				local physobj = target:GetPhysicsObject()
