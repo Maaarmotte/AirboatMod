@@ -14,3 +14,4 @@ end
 game.AddParticles("particles/scary_ghost.pcf")
 game.AddParticles("particles/smoke_blackbillow.pcf")
 game.AddParticles("particles/flamethrower.pcf")
+game.AddParticles("particles/marmottes.pcf")

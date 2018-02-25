@@ -48,7 +48,7 @@ sound.Add({
 function mod:Mount(amBoat)
 	print("[AM] Mounting mod: " .. mod.Name)
 
-	self.Turret = self:MountHolo(amBoat, "models/workshop/weapons/c_models/c_ai_flamethrower/c_ai_flamethrower.mdl", self.Anchor, Angle(0, 90, 0), 1)
+	self.Turret = self:MountHolo(amBoat, "models/workshop_partner/weapons/c_models/c_ai_flamethrower/c_ai_flamethrower.mdl", self.Anchor, Angle(0, 90, 0), 1)
 	self.Flames = self:MountHolo(amBoat, "models/props_junk/PopCan01a.mdl", self.Anchor + Vector(0, 50, 3), Angle(0, 90, 0), 0)
 	self.Flames:SetParent(self.Turret)
 end
