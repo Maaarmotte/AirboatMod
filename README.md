@@ -39,10 +39,12 @@ bientot :
   
   - un systeme de points/argent pour acheter des machins
   
-  - hud pour afficher les powerups (et d'autres bidules)
+  - hud pour afficher les powerups, avec explications de celui-ci et le nombre d'utilisation (et d'autres bidules)
   
   - des skins pour upgrades
   
   - des skins pour powerups (genre un autre model que la citrouille)
   
-  - un systeme de "circuit"
+  - un systeme de "circuit" et le moyen d'en créer (départ, checkpoints, classement)
+  
+  - hud pour la vie en % ?
