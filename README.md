@@ -13,6 +13,11 @@ jump :
 mouse 1 :
   - flamethrower
   - freezer
+  
+  idées :
+    - harpon, genre une rope entre 2 airboats
+    - belier, plus de dégats lors d'un contacte
+    - pistolet a seringues, dégats sur la durée
 
 
 [POWER UP]
@@ -36,6 +41,7 @@ bientot :
   
   - ? inverser les controles 
   
+  - ? changer angle caméra
 
 
 
