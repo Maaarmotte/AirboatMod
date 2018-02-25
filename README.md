@@ -12,6 +12,7 @@ jump :
 
 mouse 1 :
   - flamethrower
+  - freezer
 
 
 [POWER UP]
@@ -20,6 +21,8 @@ disponible dans les caisses, utilisables via mouse 2
   - defense : réduit les dégats reçus
 
   - force : augmente les dégats infligés
+  
+  - boost : ? je sais pas vraiment
 
   - debug : ...
 
@@ -29,6 +32,9 @@ bientot :
   
   - citrouille : lance une citrouille devant, le joueur touché s'envole et tourne
   
+  - ? fake caisse
+  
+  - ? inverser les controles 
   
 
 
