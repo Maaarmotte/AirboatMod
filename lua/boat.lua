@@ -125,6 +125,26 @@ function AMBoat:Spawn()
 	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
 end
 
+function AMBoat:SetMod(modid)
+	local mod = AMMods.Mods[modid]
+	if not mod then return end
+
+	local key = mod.Type
+
+	if self.Mods[key] then
+		self:UnsetKey(key)
+	end
+
+	self.Mods[key] = AMMods.Instantiate(modid)
+	-- self.Mods[key]:Mount(self)
+end
+
+function AMBoat:UnsetKey(key)
+	print(key)
+		self.Mods[key]:Unmount(self)
+		self.Mods[key] = nil
+end
+
 function AMBoat:MountMods()
 	if IsValid(self.Entity) then
 		for _,v in pairs(self.Mods) do

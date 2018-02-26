@@ -26,9 +26,9 @@ if SERVER then
 
 		for key, mod in pairs(settings.Mods) do
 			if not AMMods.Mods[mod] then
-				amPlayer:UnmountMod(key)
+				amPlayer:UnsetKey(key)
 			else
-				amPlayer:MountMod(mod)
+				amPlayer:SetMod(mod)
 			end
 		end
 

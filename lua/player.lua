@@ -73,7 +73,7 @@ function AMPlayer:Spawn()
 
 	amBoat:AddInvulnerableTime(3)
 	amBoat:SetHealth(15)
-	amBoat:UnmountMods()
+	-- amBoat:UnmountMods()
 	amBoat:MountMods()
 
 	amBoat:Synchronize()
@@ -92,7 +92,7 @@ function AMPlayer:Spawn()
 	boat:SetPos(pos)
 end
 
-function AMPlayer:MountMod(modid)
+function AMPlayer:SetMod(modid)
 	local mod = AMMods.Mods[modid]
 	if not mod then return end
 
@@ -100,26 +100,15 @@ function AMPlayer:MountMod(modid)
 	if not amBoat then return end
 
 	if mod and table.HasValue(self.Mods, modid) then
-		local key = mod.Type
-
-		if amBoat.Mods[key] then
-			amBoat.Mods[key]:Unmount(amBoat)
-		end
-		amBoat.Mods[key] = AMMods.Instantiate(modid)
-		amBoat.Mods[key]:Mount(amBoat)
-
-		amBoat:Synchronize()
+		amBoat:SetMod(modid)
 	else
 		print("[AM] Player " .. self.Entity:Name() .. " doesn't have access to " .. modid)
 	end
 end
 
-function AMPlayer:UnmountMod(key)
+function AMPlayer:UnsetKey(key)
 	local amBoat = self:GetAirboat()
 	if not amBoat then return end
 
-	amBoat.Mods[key]:Unmount(amBoat)
-	amBoat.Mods[key] = nil
-
-	amBoat:Synchronize()
+	amBoat:UnsetKey(key)
 end
