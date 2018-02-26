@@ -1,7 +1,8 @@
 -- Command to enter the game
 hook.Add("PlayerSay", "Airboat", function(ply, text, isTeam)
 	if text == "!boat" then
-		AMMain.InitPlayer(ply)
+		amPlayer = AMMain.NewPlayer(ply)
+		AMMenu.SendMenu(amPlayer)
 	end
 end)
 
@@ -17,7 +18,7 @@ hook.Add("CanPlayerEnterVehicle", "Airboat", function(ply, boat)
 			if amPlayer:GetPlaying() then
 				return true
 			end
-			AMMenu.SendMenu(amPlayer, amBoat)
+			AMMenu.SendMenu(amPlayer)
 			return false
 		else
 			return false

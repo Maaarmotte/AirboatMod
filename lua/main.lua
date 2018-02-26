@@ -3,12 +3,14 @@ AMMain.Spawns["gm_construct_flatgrass_v6-2"] = { Vector(12607.637695, -7303.8359
 AMMain.Spawns["gm_excess_waters"] = { Vector(-1042, -10021, 654), Vector(-2733, -8171, 454) }
 AMMain.Spawns["gm_excess_construct_13"] = { Vector(2038, -10431, -34), Vector(5736, -12471, 166)}
 
-function AMMain.InitPlayer(ply)
+function AMMain.NewPlayer(ply)
 	local amPly = ply.AMPlayer or AMPlayer.New(ply)
-	local amBoat = amPly.AMBoat or AMBoat.New()
-	amPly:SetAirboat(amBoat)
-	amBoat:SetPlayer(amPly)
-	amBoat:Spawn()
+	-- local amBoat = amPly.AMBoat or AMBoat.New()
+	-- amPly:SetAirboat(amBoat)
+	-- amBoat:SetPlayer(amPly)
+	-- amBoat:Spawn()
+
+	return amPly
 end
 
 function AMMain.Tick()

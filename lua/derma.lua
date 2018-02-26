@@ -3,20 +3,18 @@ if SERVER then
 	util.AddNetworkString("am_show_menu")
 	util.AddNetworkString("am_start_playing")
 
-	function AMMenu.SendMenu(amPlayer, amBoat)
-		if amBoat then
+	function AMMenu.SendMenu(amPlayer)
+		if amPlayer then
 			net.Start("am_show_menu")
 				local active = {}
-				for k,v in pairs(amBoat.Mods) do
-					active[k] = v.Name
+				for key, modid in pairs(amPlayer.Mods) do
+					active[key] = modid
 				end
 				net.WriteTable(active)
-				net.WriteTable(amPlayer.Mods)
+				net.WriteTable(amPlayer.OwnedMods)
 			net.Send(amPlayer:GetEntity())
 		end
 	end
-
-
 
 	net.Receive("am_start_playing", function(_, ply)
 		local amPlayer = ply.AMPlayer
@@ -24,15 +22,16 @@ if SERVER then
 
 		local settings = net.ReadTable()
 
-		for key, mod in pairs(settings.Mods) do
-			if not AMMods.Mods[mod] then
-				amPlayer:UnsetKey(key)
-			else
-				amPlayer:SetMod(mod)
-			end
-		end
-
+		amPlayer:SetSettings(settings)
 		amPlayer:Spawn()
+		--
+		-- for key, mod in pairs(settings.Mods) do
+		-- 	if not AMMods.Mods[mod] then
+		-- 		amPlayer:UnsetKey(key)
+		-- 	else
+		-- 		amPlayer:SetMod(mod)
+		-- 	end
+		-- end
 	end)
 else
 	AMMenu.SX = 600
@@ -62,6 +61,13 @@ else
 			surface.SetDrawColor( 255, 255, 255, 200 )
 			surface.DrawOutlinedRect( 0, 0, AMMenu.MainFrame:GetWide(), AMMenu.MainFrame:GetTall() )
 		end
+		function AMMenu:OnRemove()
+			for _, prop in pairs(AMMenu.Props) do
+				if IsValid(prop) then
+					prop:Remove()
+				end
+			end
+		end
 
 		local modelFrame = vgui.Create("DModelPanel", AMMenu.MainFrame)
 		modelFrame:SetSize(2*AMMenu.SX/3 - 15, AMMenu.SY - 25)
@@ -87,7 +93,7 @@ else
 		end)
 
 		local shiftButton = vgui.Create("DButton", AMMenu.MainFrame)
-		if active.shift then shiftButton:SetText("[Shift]: " .. AMMods.Mods[active.shift].FullName)
+		if active.shift and AMMods.Mods[active.shift] then shiftButton:SetText("[Shift]: " .. AMMods.Mods[active.shift].FullName)
 		else shiftButton:SetText("[Shift]: None") end
 		shiftButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05 + 25)
 		shiftButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
@@ -112,7 +118,7 @@ else
 		end
 
 		local spaceButton = vgui.Create("DButton", AMMenu.MainFrame)
-		if active.space then spaceButton:SetText("[Space]: " .. AMMods.Mods[active.space].FullName)
+		if active.space and AMMods.Mods[active.space] then spaceButton:SetText("[Space]: " .. AMMods.Mods[active.space].FullName)
 		else spaceButton:SetText("[Space]: None") end
 		spaceButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05*5 + 25)
 		spaceButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
@@ -137,7 +143,7 @@ else
 		end
 
 		local weaponButton = vgui.Create("DButton", AMMenu.MainFrame)
-		if active.mouse1 then weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[active.mouse1].FullName)
+		if active.mouse1 and AMMods.Mods[active.mouse1] then weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[active.mouse1].FullName)
 		else weaponButton:SetText("[Mouse1]: None") end
 		weaponButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05*9 + 25)
 		weaponButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
@@ -216,6 +222,7 @@ else
 			ent:SetMaterial(material)
 			ent:SetColor(color)
 			ent:SetParent(airboat)
+			ent:SetNoDraw(true)
 
 			table.insert(AMMenu.Props, ent)
 

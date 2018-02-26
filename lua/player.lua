@@ -5,11 +5,14 @@ AMPlayer_mt = {__index = function(tab, key) return AMPlayer[key] end}
 function AMPlayer.New(ply)
 	local self = {}
 	setmetatable(self, AMPlayer_mt)
+
 	self.Entity = ply
 	self.AMBoat = nil
 	self.Health = 15
 	self.Playing = false
-	self.Mods = { "boost", "jump", "boost2", "flamethrower", "freezer" }
+	self.Mods = {shift="boost", space="jump", mouse1=""}
+	self.OwnedMods = { "boost", "jump", "boost2", "flamethrower", "freezer" }
+
 	ply.AMPlayer = self
 
 	return self
@@ -58,11 +61,27 @@ function AMPlayer:GetPlaying()
 	return self.Playing
 end
 
+function AMPlayer:SetSettings(settings)
+	for key, mod in pairs(settings.Mods) do
+		if not AMMods.Mods[mod] then
+			amPlayer:UnsetKey(key)
+		else
+			amPlayer:SetMod(mod)
+		end
+	end
+end
+
 function AMPlayer:Spawn()
 	local ply = self.Entity
 
 	local amBoat = self:GetAirboat()
-	if not amBoat or not amBoat:GetEntity() or not amBoat:GetEntity():IsValid() then return end
+
+	if not amBoat or not amBoat:GetEntity() or not amBoat:GetEntity():IsValid() then
+		amBoat = AMBoat.New()
+		self:SetAirboat(amBoat)
+		amBoat:SetPlayer(self)
+		amBoat:Spawn()
+	end
 
 	local boat = amBoat:GetEntity()
 
@@ -73,7 +92,16 @@ function AMPlayer:Spawn()
 
 	amBoat:AddInvulnerableTime(3)
 	amBoat:SetHealth(15)
-	-- amBoat:UnmountMods()
+	amBoat:UnmountMods()
+
+	for key, modid in pairs(self.Mods) do
+		if modid ~= "" then
+			amBoat:SetMod(modid)
+		else
+			amBoat:UnsetKey(key)
+		end
+	end
+
 	amBoat:MountMods()
 
 	amBoat:Synchronize()
@@ -92,23 +120,23 @@ function AMPlayer:Spawn()
 	boat:SetPos(pos)
 end
 
+function AMPlayer:IsOwningMod(modid)
+	return table.HasValue(self.OwnedMods, modid)
+end
+
 function AMPlayer:SetMod(modid)
 	local mod = AMMods.Mods[modid]
 	if not mod then return end
 
-	local amBoat = self:GetAirboat()
-	if not amBoat then return end
+	if mod.Type == "powerup" then return end
 
-	if mod and table.HasValue(self.Mods, modid) then
-		amBoat:SetMod(modid)
+	if self:IsOwningMod(modid) then
+		self.Mods[mod.Type] = modid
 	else
 		print("[AM] Player " .. self.Entity:Name() .. " doesn't have access to " .. modid)
 	end
 end
 
 function AMPlayer:UnsetKey(key)
-	local amBoat = self:GetAirboat()
-	if not amBoat then return end
-
-	amBoat:UnsetKey(key)
+	self.Mods[key] = ""
 end

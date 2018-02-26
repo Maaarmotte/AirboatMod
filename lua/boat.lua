@@ -140,9 +140,8 @@ function AMBoat:SetMod(modid)
 end
 
 function AMBoat:UnsetKey(key)
-	print(key)
-		self.Mods[key]:Unmount(self)
-		self.Mods[key] = nil
+	-- self.Mods[key]:Unmount(self)
+	self.Mods[key] = nil
 end
 
 function AMBoat:MountMods()
