@@ -1,3 +1,7 @@
+if AMMenu and IsValid(AMMenu.MainFrame) then
+	AMMenu.MainFrame:Close()
+end
+
 AMMenu = {}
 if SERVER then
 	util.AddNetworkString("am_show_menu")
@@ -35,143 +39,171 @@ if SERVER then
 	end)
 else
 	AMMenu.SX = 600
-	AMMenu.SY = 300
+	AMMenu.SY = 400
+
 	AMMenu.MainFrame = nil
 	AMMenu.Entity = NULL
 	AMMenu.Props = {}
 	AMMenu.Settings = {}
 
+	surface.CreateFont("AM_Title", {
+		font = "Arial",
+		size = 20,
+		weight = 1000
+	})
+
+	surface.CreateFont("AM_Text", {
+		font = "Arial",
+		size = 15,
+		weight = 400
+	})
+
+	surface.CreateFont("AM_SmallText", {
+		font = "Arial",
+		size = 12,
+		weight = 400
+	})
+
+
+	local blur = Material("pp/blurscreen")
+
+	local function DrawBlur(pnl, a, d)
+		local x, y = pnl:LocalToScreen(0, 0)
+		surface.SetDrawColor(255, 255, 255)
+		surface.SetMaterial(blur)
+
+		for i = 1, d do
+			blur:SetFloat("$blur", (i / d) * (a))
+			blur:Recompute()
+			render.UpdateScreenEffectTexture()
+			surface.DrawTexturedRect(-x, -y, ScrW(), ScrH())
+		end
+	end
+
+	local function paint_button_light(self, w, h)
+		local color = Color(234, 234, 234, 255)
+
+		if self.Depressed or self:IsSelected() or self:GetToggle() then
+			color = Color(38, 174, 255)
+		elseif self.Hovered then
+			color = Color(255, 255, 255, 255)
+		end
+
+		surface.SetDrawColor(color)
+		surface.DrawRect(0, 0, w, h)
+	end
+
+	local function paint_button_border(self, w, h)
+		local color = Color(225, 225, 225, 255)
+
+		if self.Depressed or self:IsSelected() or self:GetToggle() then
+			color = Color(38, 174, 255)
+		elseif self.Hovered then
+			color = Color(240, 240, 240, 255)
+		end
+
+		surface.SetDrawColor(color)
+		surface.DrawRect(0, 0, w, h)
+
+		surface.SetDrawColor(Color(0, 0, 0, 100))
+		surface.DrawOutlinedRect(0, 0, w, h)
+	end
+
 	function AMMenu.Display(active, mods)
 		AMMenu.Settings.Mods = active
 
-		if not mods then
-			print("[AMBoat] No mods for this player !")
-			return
-		end
-
 		AMMenu.MainFrame = vgui.Create("DFrame")
-		AMMenu.MainFrame:SetPos(ScrW()/2 - AMMenu.SX/2, ScrH()/2 - AMMenu.SY/2)
 		AMMenu.MainFrame:SetSize(AMMenu.SX, AMMenu.SY)
-		AMMenu.MainFrame:SetTitle("Airboat customization")
-		AMMenu.MainFrame:SetDraggable(true)
+		AMMenu.MainFrame:Center()
+		AMMenu.MainFrame:SetTitle("")
+		AMMenu.MainFrame:SetDraggable(false)
+		AMMenu.MainFrame:SetDeleteOnClose(true)
 		AMMenu.MainFrame:MakePopup()
-		AMMenu.MainFrame.Paint = function()
-			surface.SetDrawColor( 50, 50, 50, 200 )
-			surface.DrawRect( 0, 0, AMMenu.MainFrame:GetWide(), AMMenu.MainFrame:GetTall() )
-			surface.SetDrawColor( 255, 255, 255, 200 )
-			surface.DrawOutlinedRect( 0, 0, AMMenu.MainFrame:GetWide(), AMMenu.MainFrame:GetTall() )
-		end
-		function AMMenu:OnRemove()
-			for _, prop in pairs(AMMenu.Props) do
-				if IsValid(prop) then
-					prop:Remove()
-				end
-			end
+		AMMenu.MainFrame:ShowCloseButton(false)
+		AMMenu.MainFrame:DockPadding(0, 0, 0, 0)
+		AMMenu.MainFrame.Paint = function(self, w, h)
+			DrawBlur(self, 2, 5)
+			surface.SetDrawColor(0, 40, 55, 175)
+			surface.DrawRect(0, 0, w, h)
 		end
 
-		local modelFrame = vgui.Create("DModelPanel", AMMenu.MainFrame)
-		modelFrame:SetSize(2*AMMenu.SX/3 - 15, AMMenu.SY - 25)
-		modelFrame:SetPos(AMMenu.SX/3, 25)
-		modelFrame:SetModel("models/airboat.mdl")
-		modelFrame:SetCamPos(Vector(-185, -185, 50))
-		modelFrame:SetFOV(45)
-
-		function modelFrame:DrawModel()
-			self.Entity:DrawModel()
-
-			for _, prop in pairs(AMMenu.Props) do
-				if IsValid(prop) then
-					prop:DrawModel()
-				end
-			end
+		local header = vgui.Create("DPanel", AMMenu.MainFrame)
+		header:Dock(TOP)
+		header:SetTall(25)
+		header.Paint = function(self, w, h)
+			surface.SetDrawColor(28, 33, 44, 255)
+			surface.DrawRect(0, 0, w, h)
 		end
 
-		AMMenu.Entity = modelFrame:GetEntity()
+		local close_but = vgui.Create("DButton", header)
+		close_but:Dock(RIGHT)
+		close_but:DockMargin(0, 3, 3 ,3)
+		close_but:SetText("X")
+		close_but:SetFont("AM_Title")
+		close_but:SetWide(40)
+		function close_but:DoClick()
+			AMMenu.MainFrame:Close()
+		end
+		function close_but:Paint(w, h)
+			local color = Color(234, 234, 234, 255)
 
-		timer.Simple(0.01, function()
-			AMMenu.UpdateModel()
-		end)
-
-		local shiftButton = vgui.Create("DButton", AMMenu.MainFrame)
-		if active.shift and AMMods.Mods[active.shift] then shiftButton:SetText("[Shift]: " .. AMMods.Mods[active.shift].FullName)
-		else shiftButton:SetText("[Shift]: None") end
-		shiftButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05 + 25)
-		shiftButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
-		shiftButton.DoClick = function()
-			local submenu = DermaMenu()
-			for _, mod in ipairs(mods) do
-				if AMMods.Mods[mod].Type == "shift" then
-					submenu:AddOption(AMMods.Mods[mod].FullName, function()
-						active.shift = mod
-						AMMenu.UpdateModel()
-						shiftButton:SetText("[Shift]: " .. AMMods.Mods[mod].FullName)
-					end)
-				end
+			if self.Depressed or self:IsSelected() or self:GetToggle() then
+				color = Color(244, 57, 40, 200)
+			elseif self.Hovered then
+				color = Color(255, 255, 255, 255)
 			end
 
-			submenu:AddOption("None", function()
-				active.shift = ""
-				AMMenu.UpdateModel()
-				shiftButton:SetText("[Shift]: None")
-			end)
-			submenu:Open()
+			surface.SetDrawColor(color)
+			surface.DrawRect(0, 0, w, h)
 		end
 
-		local spaceButton = vgui.Create("DButton", AMMenu.MainFrame)
-		if active.space and AMMods.Mods[active.space] then spaceButton:SetText("[Space]: " .. AMMods.Mods[active.space].FullName)
-		else spaceButton:SetText("[Space]: None") end
-		spaceButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05*5 + 25)
-		spaceButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
-		spaceButton.DoClick = function()
-			local submenu = DermaMenu()
-			for _, mod in ipairs(mods) do
-				if AMMods.Mods[mod].Type == "space" then
-					submenu:AddOption(AMMods.Mods[mod].FullName, function()
-						active.space = mod
-						AMMenu.UpdateModel()
-						spaceButton:SetText("[Space]: " .. AMMods.Mods[mod].FullName)
-					end)
-				end
-			end
+		local title = vgui.Create("DLabel", header)
+		title:Dock(FILL)
+		title:SetFont("AM_Title")
+		title:SetText("Airboad Mod Menu")
+		title:DockMargin(5, 5, 5, 5)
+		title:SetWide(200)
+		title:SetTextColor(Color(235, 235, 235))
 
-			submenu:AddOption("None", function()
-				active.space = ""
-				AMMenu.UpdateModel()
-				spaceButton:SetText("[Space]: None")
-			end)
-			submenu:Open()
+
+		local header_menu = vgui.Create("DPanel", AMMenu.MainFrame)
+		header_menu:Dock(TOP)
+		header_menu:SetTall(32)
+		header_menu.Paint = function(self, w, h)
+			surface.SetDrawColor(38, 45, 59, 255)
+			surface.DrawRect(0, 0, w, h)
 		end
 
-		local weaponButton = vgui.Create("DButton", AMMenu.MainFrame)
-		if active.mouse1 and AMMods.Mods[active.mouse1] then weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[active.mouse1].FullName)
-		else weaponButton:SetText("[Mouse1]: None") end
-		weaponButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05*9 + 25)
-		weaponButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
-		weaponButton.DoClick = function()
-			local submenu = DermaMenu()
-			for _, mod in ipairs(mods) do
-				if AMMods.Mods[mod].Type == "mouse1" then
-					submenu:AddOption(AMMods.Mods[mod].FullName, function()
-						active.mouse1 = mod
-						AMMenu.UpdateModel()
-						weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[mod].FullName)
-					end)
-				end
-			end
-
-			submenu:AddOption("None", function()
-				active.mouse1 = ""
-				AMMenu.UpdateModel()
-				weaponButton:SetText("[Mouse1]: None")
-			end)
-			submenu:Open()
+		local footer_menu = vgui.Create("DPanel", AMMenu.MainFrame)
+		footer_menu:Dock(BOTTOM)
+		footer_menu:SetTall(40)
+		footer_menu.Paint = function(self, w, h)
+			surface.SetDrawColor(38, 45, 59, 255)
+			surface.DrawRect(0, 0, w, h)
 		end
 
-		local playButton = vgui.Create("DButton", AMMenu.MainFrame)
-		playButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05*14 + 25)
-		playButton:SetText("Play !")
-		playButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
-		playButton.DoClick = function()
+		local leave_but = vgui.Create("DButton", footer_menu)
+		leave_but:Dock(RIGHT)
+		leave_but:DockMargin(0, 5, 5 ,5)
+		leave_but:SetText("Leave")
+		leave_but:SetWide(100)
+		leave_but:SetFont("AM_Title")
+		leave_but.Paint = paint_button_light
+		function leave_but:DoClick()
+			AMMenu.MainFrame:Close()
+
+			net.Start("am_stop_playing")
+			net.SendToServer()
+		end
+
+		local play_but = vgui.Create("DButton", footer_menu)
+		play_but:Dock(RIGHT)
+		play_but:DockMargin(0, 5, 5 ,5)
+		play_but:SetText("Play")
+		play_but:SetWide(100)
+		play_but:SetFont("AM_Title")
+		play_but.Paint = paint_button_light
+		function play_but:DoClick()
 			AMMenu.MainFrame:Close()
 
 			net.Start("am_start_playing")
@@ -179,16 +211,202 @@ else
 			net.SendToServer()
 		end
 
-		local leaveButton = vgui.Create("DButton", AMMenu.MainFrame)
-		leaveButton:SetPos(AMMenu.SX*0.30, AMMenu.SY*0.05*14 + 25)
-		leaveButton:SetText("Leave :(")
-		leaveButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
-		leaveButton.DoClick = function()
-			AMMenu.MainFrame:Close()
+		local credit = vgui.Create("DLabel", footer_menu)
+		credit:Dock(FILL)
+		credit:DockMargin(5, 23, 5 ,5)
+		credit:SetFont("AM_SmallText")
+		credit:SetText("Developed by Marmotte, Sir Papate and sirious.")
+		credit:SetTextColor(Color(255, 255, 255, 50))
 
-			net.Start("am_stop_playing")
-			net.SendToServer()
+		local curentpanel
+		local menus = {}
+
+		local function showmenu(id)
+			if curentpanel then
+				curentpanel:SetVisible(false)
+				curentpanel.tab_but.selected = false
+			end
+
+			local pnl = menus[id]
+			curentpanel = pnl
+			pnl:SetVisible(true)
+			pnl.tab_but.selected = true
 		end
+
+		local function createmenu(name, build)
+			local pnl = vgui.Create("DPanel", AMMenu.MainFrame)
+			pnl:Dock(FILL)
+			pnl:SetVisible(false)
+			function pnl:Paint()
+			end
+
+			local id = table.insert(menus, pnl)
+
+			local but = vgui.Create("DButton", header_menu)
+			but:Dock(LEFT)
+			but:DockMargin(5, 5, 0, 0)
+			but:SetText(name)
+			but:SetWide(100)
+			but:SetFont("AM_Title")
+
+			pnl.tab_but = but
+
+			function but:DoClick()
+				showmenu(id)
+			end
+
+			function but:Paint(w, h)
+				local color = Color(220, 220, 220, 255)
+
+				if self.Depressed or self:IsSelected() or self:GetToggle() then
+					color = Color(38, 174, 255)
+				elseif self.Hovered or self.selected then
+					color = Color(255, 255, 255, 255)
+				end
+
+				surface.SetDrawColor(color)
+				surface.DrawRect(0, 0, w, h)
+			end
+
+			build(pnl)
+		end
+
+		createmenu("Mods", function(pnl)
+			function pnl:Paint(w, h)
+				surface.SetDrawColor(Color(38, 45, 59, 255))
+				surface.DrawRect(0, 0, 5, h)
+			end
+
+			local optionList = vgui.Create("DPanel", pnl)
+			optionList:Dock(LEFT)
+			optionList:DockMargin(5, 0, 0, 0)
+			optionList:SetWide(175)
+			function optionList:Paint(w, h)
+				surface.SetDrawColor(255, 255, 255, 255)
+				surface.DrawRect(0, 0, w, h)
+			end
+
+			local modelFrame = vgui.Create("DModelPanel", pnl)
+			modelFrame:Dock(FILL)
+			modelFrame:SetModel("models/airboat.mdl")
+			modelFrame:SetCamPos(Vector(-185, -185, 85))
+			modelFrame:SetFOV(50)
+
+			function modelFrame:DrawModel()
+				self.Entity:DrawModel()
+
+				for _, prop in pairs(AMMenu.Props) do
+					if IsValid(prop) then
+						prop:DrawModel()
+					end
+				end
+			end
+
+			AMMenu.Entity = modelFrame:GetEntity()
+
+			timer.Simple(0.01, function()
+				AMMenu.UpdateModel()
+			end)
+
+			local shiftButton = vgui.Create("DButton", optionList)
+			if active.shift and AMMods.Mods[active.shift] then shiftButton:SetText("[Shift]: " .. AMMods.Mods[active.shift].FullName)
+			else shiftButton:SetText("[Shift]: None") end
+
+			shiftButton:Dock(TOP)
+			shiftButton.Paint = paint_button_border
+			shiftButton:SetFont("AM_Text")
+			shiftButton:DockMargin(5, 5, 5, 5)
+			shiftButton:SetTall(50)
+			shiftButton.DoClick = function()
+				local submenu = DermaMenu()
+				for _, mod in ipairs(mods) do
+					if AMMods.Mods[mod].Type == "shift" then
+						submenu:AddOption(AMMods.Mods[mod].FullName, function()
+							active.shift = mod
+							AMMenu.UpdateModel()
+							shiftButton:SetText("[Shift]: " .. AMMods.Mods[mod].FullName)
+						end)
+					end
+				end
+
+				submenu:AddOption("None", function()
+					active.shift = ""
+					AMMenu.UpdateModel()
+					shiftButton:SetText("[Shift]: None")
+				end)
+				submenu:Open()
+			end
+
+			local spaceButton = vgui.Create("DButton", optionList)
+			if active.space and AMMods.Mods[active.space] then spaceButton:SetText("[Space]: " .. AMMods.Mods[active.space].FullName)
+			else spaceButton:SetText("[Space]: None") end
+
+			spaceButton:Dock(TOP)
+			spaceButton.Paint = paint_button_border
+			spaceButton:SetFont("AM_Text")
+			spaceButton:DockMargin(5, 5, 5, 5)
+			spaceButton:SetTall(50)
+			spaceButton.DoClick = function()
+				local submenu = DermaMenu()
+				for _, mod in ipairs(mods) do
+					if AMMods.Mods[mod].Type == "space" then
+						submenu:AddOption(AMMods.Mods[mod].FullName, function()
+							active.space = mod
+							AMMenu.UpdateModel()
+							spaceButton:SetText("[Space]: " .. AMMods.Mods[mod].FullName)
+						end)
+					end
+				end
+
+				submenu:AddOption("None", function()
+					active.space = ""
+					AMMenu.UpdateModel()
+					spaceButton:SetText("[Space]: None")
+				end)
+				submenu:Open()
+			end
+
+			local weaponButton = vgui.Create("DButton", optionList)
+			if active.mouse1 and AMMods.Mods[active.mouse1] then weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[active.mouse1].FullName)
+			else weaponButton:SetText("[Mouse1]: None") end
+
+			weaponButton:Dock(TOP)
+			weaponButton.Paint = paint_button_border
+			weaponButton:SetFont("AM_Text")
+			weaponButton:DockMargin(5, 5, 5, 5)
+			weaponButton:SetTall(50)
+			weaponButton.DoClick = function()
+				local submenu = DermaMenu()
+				for _, mod in ipairs(mods) do
+					if AMMods.Mods[mod].Type == "mouse1" then
+						submenu:AddOption(AMMods.Mods[mod].FullName, function()
+							active.mouse1 = mod
+							AMMenu.UpdateModel()
+							weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[mod].FullName)
+						end)
+					end
+				end
+
+				submenu:AddOption("None", function()
+					active.mouse1 = ""
+					AMMenu.UpdateModel()
+					weaponButton:SetText("[Mouse1]: None")
+				end)
+				submenu:Open()
+			end
+		end)
+
+		createmenu("Shop", function(pnl)
+			function pnl:Paint(w, h)
+				surface.SetDrawColor(Color(38, 45, 59, 255))
+				surface.DrawRect(0, 0, w, h)
+
+				surface.SetDrawColor(Color(255, 255, 255, 255))
+				surface.DrawRect(5, 0, w - 10, h)
+			end
+		end)
+
+		showmenu(1)
 	end
 
 -- Je n'ai pas trouver d'autre facon pour créer les props sans devoir reecrire les "Mount" des mods
