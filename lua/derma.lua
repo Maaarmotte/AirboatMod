@@ -1,7 +1,8 @@
 AMMenu = {}
 if SERVER then
 	util.AddNetworkString("am_show_menu")
-	
+	util.AddNetworkString("am_start_playing")
+
 	function AMMenu.SendMenu(amPlayer, amBoat)
 		if amBoat then
 			net.Start("am_show_menu")
@@ -14,14 +15,34 @@ if SERVER then
 			net.Send(amPlayer:GetEntity())
 		end
 	end
+
+
+
+	net.Receive("am_start_playing", function(_, ply)
+		local amPlayer = ply.AMPlayer
+		if not amPlayer then return end
+
+		local settings = net.ReadTable()
+
+		for key, mod in pairs(settings.Mods) do
+			if not AMMods.Mods[mod] then
+				amPlayer:UnmountMod(key)
+			else
+				amPlayer:MountMod(mod)
+			end
+		end
+
+		amPlayer:Spawn()
+	end)
 else
 	AMMenu.SX = 600
 	AMMenu.SY = 300
 	AMMenu.MainFrame = nil
 	
+	AMMenu.Settings = {}
 	function AMMenu.Display(active, mods)
-		-- PrintTable(mods)
-		
+		AMMenu.Settings.Mods = active
+
 		if not mods then
 			print("[AMBoat] No mods for this player !")
 			return
@@ -54,14 +75,20 @@ else
 		shiftButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
 		shiftButton.DoClick = function()
 			local submenu = DermaMenu()
-			for _,v in ipairs(mods) do
-				if AMMods.Mods[v].Type == "shift" then
-					submenu:AddOption(AMMods.Mods[v].FullName, function()
-						LocalPlayer():ConCommand("am_mod " .. v)
-						shiftButton:SetText("[Shift]: " .. AMMods.Mods[v].FullName)
+			for _, mod in ipairs(mods) do
+				if AMMods.Mods[mod].Type == "shift" then
+					submenu:AddOption(AMMods.Mods[mod].FullName, function()
+						active.shift = mod
+						shiftButton:SetText("[Shift]: " .. AMMods.Mods[mod].FullName)
 					end)
 				end
 			end
+
+			submenu:AddOption("None", function()
+				active.shift = ""
+				AMMenu.UpdateModel()
+				shiftButton:SetText("[Shift]: None")
+			end)
 			submenu:Open()
 		end
 		
@@ -72,14 +99,20 @@ else
 		spaceButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
 		spaceButton.DoClick = function()
 			local submenu = DermaMenu()
-			for _,v in ipairs(mods) do
-				if AMMods.Mods[v].Type == "space" then
-					submenu:AddOption(AMMods.Mods[v].FullName, function()
-						LocalPlayer():ConCommand("am_mod " .. v)
-						spaceButton:SetText("[Space]: " .. AMMods.Mods[v].FullName)
+			for _, mod in ipairs(mods) do
+				if AMMods.Mods[mod].Type == "space" then
+					submenu:AddOption(AMMods.Mods[mod].FullName, function()
+						active.space = mod
+						spaceButton:SetText("[Space]: " .. AMMods.Mods[mod].FullName)
 					end)
 				end
 			end
+
+			submenu:AddOption("None", function()
+				active.space = ""
+				AMMenu.UpdateModel()
+				spaceButton:SetText("[Space]: None")
+			end)
 			submenu:Open()
 		end
 		
@@ -90,14 +123,20 @@ else
 		weaponButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
 		weaponButton.DoClick = function()
 			local submenu = DermaMenu()
-			for _,v in ipairs(mods) do
-				if AMMods.Mods[v].Type == "mouse1" then
-					submenu:AddOption(AMMods.Mods[v].FullName, function()
-						LocalPlayer():ConCommand("am_mod " .. v)
-						weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[v].FullName)
+			for _, mod in ipairs(mods) do
+				if AMMods.Mods[mod].Type == "mouse1" then
+					submenu:AddOption(AMMods.Mods[mod].FullName, function()
+						active.mouse1 = mod
+						weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[mod].FullName)
 					end)
 				end
 			end
+
+			submenu:AddOption("None", function()
+				active.mouse1 = ""
+				AMMenu.UpdateModel()
+				weaponButton:SetText("[Mouse1]: None")
+			end)
 			submenu:Open()
 		end
 		
@@ -106,8 +145,13 @@ else
 		playButton:SetText("Play !")
 		playButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
 		playButton.DoClick = function()
-			LocalPlayer():ConCommand("am_play")
 			AMMenu.MainFrame:Close()
+
+			net.Start("am_start_playing")
+				net.WriteTable(AMMenu.Settings)
+			net.SendToServer()
+		end
+	end
 		end
 	end
 	
