@@ -16,9 +16,9 @@ if SERVER then
 	function ENT:Initialize()
 		self:SetMaterial("models/player/shared/gold_player")
 		self:SetModel( "models/props_lakeside/wood_crate_01.mdl" )
-		self:PhysicsInit( SOLID_VPHYSICS )    
-		self:SetMoveType( MOVETYPE_VPHYSICS )  
-		self:SetSolid( SOLID_VPHYSICS )        
+		self:PhysicsInit( SOLID_VPHYSICS )
+		self:SetMoveType( MOVETYPE_VPHYSICS )
+		self:SetSolid( SOLID_VPHYSICS )
 
 		self:SetRenderMode(RENDERGROUP_TRANSLUCENT)
 		self:SetColor(Color(255,255,255,150))
@@ -44,15 +44,15 @@ if SERVER then
 	end
 
 	function ENT:InitPowerUp()
-		self.powerup = AMPowerUps.GetRandom()
+		self.powerup = AMMods.GetRandomPowerUp()
 
-		if not self.powerup then 
-			timer.Simple(10, function() 
+		if not self.powerup then
+			timer.Simple(10, function()
 				if self then
 					self:InitPowerUp()
-				end 
+				end
 			end)
-			return 
+			return
 		end
 
 		self.effect:SetPos(self:LocalToWorld(Vector(0,0,50)) + self.powerup.ModelOffset)
@@ -60,21 +60,21 @@ if SERVER then
 		self.effect:SetNoDraw(false)
 		self.effect:SetModel(self.powerup.Model)
 		e:SetModelScale(self.powerup.ModelScale, 0)
-		
+
 		sound.Play(Sound("garrysmod/balloon_pop_cute.wav"), self:GetPos(), 75)
 	end
 
 	function ENT:TakePowerUp(amBoat)
 		local cantake = hook.Call('AMPowerUp_Take', GM, amBoat) or true
-		
-		if not (amBoat.AMPowerUp and amBoat.AMPowerUp.Name) then
+
+		if not amBoat.Mods["powerup"] then
 			if cantake then
-				amBoat:SetPowerUp(self.powerup.Name)
+				amBoat:MountPowerUp(self.powerup.Name)
 
 				sound.Play(Sound("garrysmod/balloon_pop_cute.wav"), self:GetPos(), 75)
 				self.powerup = nil
 				self.effect:SetNoDraw(true)
-				
+
 				timer.Simple(10, function()
 					if self then
 						self:InitPowerUp()
@@ -110,7 +110,7 @@ if SERVER then
 				local amBoat = ent.AMBoat
 				self:TakePowerUp(amBoat)
 
-				
+
 			end
 		end
 	end

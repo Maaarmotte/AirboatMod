@@ -22,7 +22,7 @@ end
 function AMMod:Activate(amPly, amBoat)
 	if CurTime() - self.LastActivation > self.Delay then
 		self:Run(amPly, amBoat)
-		self.LastActivation = CurTime()	
+		self.LastActivation = CurTime()
 	end
 end
 
@@ -82,4 +82,21 @@ end
 
 function AMMods.Register(mod)
 	AMMods.Mods[mod.Name] = mod
+end
+
+
+-- PowerUp
+
+function AMMods.GetRandomPowerUp()
+	local keys	= {}
+
+	for id, mod in pairs(AMMods.Mods) do
+		if mod.Type == "powerup" then
+			table.insert(keys, id)
+		end
+	end
+
+	local id = math.random(1, #keys)
+
+	return AMMods.Mods[keys[id]]
 end
