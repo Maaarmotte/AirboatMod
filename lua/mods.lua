@@ -22,9 +22,14 @@ function AMMod:Activate(amPly, amBoat)
 end
 
 function AMMod:MountHolo(amBoat, model, pos, ang, scale, material, color)
-	local ent = amBoat:ParentHolo(model, pos, ang, scale, material, color)
-	table.insert(self.Props, ent)
-	return ent
+	if SERVER then
+		local ent = amBoat:ParentHolo(model, pos, ang, scale, material, color)
+		table.insert(self.Props, ent)
+		return ent
+	else
+		local ent = AMMenu.MountHolo(amBoat, model, pos, ang, scale, material, color)
+		return ent
+	end
 end
 
 -- Will be overrided !
