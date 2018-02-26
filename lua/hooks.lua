@@ -27,14 +27,12 @@ hook.Add("CanPlayerEnterVehicle", "Airboat", function(ply, boat)
 end)
 
 -- Stop the game when the player left or is killed
-hook.Add("PlayerLeaveVehicle", "Airboat", function(ply, boat)
+hook.Add("CanExitVehicle", "Airboat", function(boat, ply)
 	local amPlayer = ply.AMPlayer
+	print(amPlayer)
 	if amPlayer then
-		amPlayer:SetPlaying(false)
-
-		if amPlayer:GetAirboat() then
-			timer.Simple(0.1, function() amPlayer:GetAirboat():Synchronize() end)
-		end
+		AMMenu.SendMenu(amPlayer)
+		return false
 	end
 end)
 

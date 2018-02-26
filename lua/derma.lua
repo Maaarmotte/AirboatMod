@@ -2,6 +2,7 @@ AMMenu = {}
 if SERVER then
 	util.AddNetworkString("am_show_menu")
 	util.AddNetworkString("am_start_playing")
+	util.AddNetworkString("am_stop_playing")
 
 	function AMMenu.SendMenu(amPlayer)
 		if amPlayer then
@@ -24,14 +25,13 @@ if SERVER then
 
 		amPlayer:SetSettings(settings)
 		amPlayer:Spawn()
-		--
-		-- for key, mod in pairs(settings.Mods) do
-		-- 	if not AMMods.Mods[mod] then
-		-- 		amPlayer:UnsetKey(key)
-		-- 	else
-		-- 		amPlayer:SetMod(mod)
-		-- 	end
-		-- end
+	end)
+
+	net.Receive("am_stop_playing", function(_, ply)
+		local amPlayer = ply.AMPlayer
+		if not amPlayer then return end
+
+		amPlayer:Leave()
 	end)
 else
 	AMMenu.SX = 600
@@ -176,6 +176,17 @@ else
 
 			net.Start("am_start_playing")
 				net.WriteTable(AMMenu.Settings)
+			net.SendToServer()
+		end
+
+		local leaveButton = vgui.Create("DButton", AMMenu.MainFrame)
+		leaveButton:SetPos(AMMenu.SX*0.30, AMMenu.SY*0.05*14 + 25)
+		leaveButton:SetText("Leave :(")
+		leaveButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
+		leaveButton.DoClick = function()
+			AMMenu.MainFrame:Close()
+
+			net.Start("am_stop_playing")
 			net.SendToServer()
 		end
 	end

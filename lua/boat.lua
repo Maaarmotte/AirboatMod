@@ -204,6 +204,7 @@ function AMBoat:Damage(amount, attacker)
 end
 
 function AMBoat:AddInvulnerableTime(value)
+	if not self.Entity then return end
 	self.LastBump = CurTime() + value
 	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
 	self.Entity:SetColor(Color(255, 255, 255, 100))

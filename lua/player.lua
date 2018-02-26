@@ -74,10 +74,9 @@ end
 function AMPlayer:Spawn()
 	local ply = self.Entity
 
-	local amBoat = self:GetAirboat()
+	local amBoat = self:GetAirboat() or AMBoat.New()
 
 	if not amBoat or not amBoat:GetEntity() or not amBoat:GetEntity():IsValid() then
-		amBoat = AMBoat.New()
 		self:SetAirboat(amBoat)
 		amBoat:SetPlayer(self)
 		amBoat:Spawn()
@@ -139,4 +138,19 @@ end
 
 function AMPlayer:UnsetKey(key)
 	self.Mods[key] = ""
+end
+
+function AMPlayer:Leave()
+	if self:GetPlaying() then
+		self:SetPlaying(false)
+
+		if self:GetAirboat() then
+			self.Entity:ExitVehicle()
+			self:GetAirboat().Entity:Remove()
+
+			self.Entity:Spawn()
+
+			self:GetAirboat():Synchronize()
+		end
+	end
 end
