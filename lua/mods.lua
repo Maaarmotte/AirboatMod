@@ -1,10 +1,5 @@
 AMMod = {}
-AMMod_mt = { __index = AMMod }
-
-AMMods = {}
-AMMods.Mods = {}
-
-local AMMods = AMMods
+AMMod_mt = { __index = function(tab, key) return AMMod[key] end}
 
 function AMMod.New()
 	local self = {}

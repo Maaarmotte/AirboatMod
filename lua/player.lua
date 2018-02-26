@@ -1,5 +1,5 @@
 AMPlayer = {}
-AMPlayer_mt = { __index = AMPlayer }
+AMPlayer_mt = {__index = function(tab, key) return AMPlayer[key] end}
 
 -- Constructor
 function AMPlayer.New(ply)

@@ -1,7 +1,7 @@
 util.AddNetworkString("am_boat_update")
 
 AMBoat = {}
-AMBoat_mt = { __index = AMBoat }
+AMBoat_mt = {__index = function(tab, key) return AMBoat[key] end}
 
 -- Constructor
 function AMBoat.New()

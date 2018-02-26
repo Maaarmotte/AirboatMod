@@ -18,6 +18,10 @@ AMPowerUps          	= {}
 AMPowerUps.PowerUps 	= {}
 AMPowerUps.Instances	= {}
 
+
+AMMods = {}
+AMMods.Mods = {}
+
 -- Run the files
 include("utils.lua")
 include("main.lua")
