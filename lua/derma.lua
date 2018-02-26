@@ -48,8 +48,8 @@ else
 		modelFrame:SetFOV(45)
 		
 		local shiftButton = vgui.Create("DButton", AMMenu.MainFrame)
-		if active.shift then shiftButton:SetText("[Shift]: " .. AMMods.Mods[active["shift"]].FullName)
-		else weaponButton:SetText("[Shift]: None") end
+		if active.shift then shiftButton:SetText("[Shift]: " .. AMMods.Mods[active.shift].FullName)
+		else shiftButton:SetText("[Shift]: None") end
 		shiftButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05 + 25)
 		shiftButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
 		shiftButton.DoClick = function()
@@ -66,8 +66,8 @@ else
 		end
 		
 		local spaceButton = vgui.Create("DButton", AMMenu.MainFrame)
-		if active.space then spaceButton:SetText("[Space]: " .. AMMods.Mods[active["space"]].FullName)
-		else weaponButton:SetText("[Space]: None") end
+		if active.space then spaceButton:SetText("[Space]: " .. AMMods.Mods[active.space].FullName)
+		else spaceButton:SetText("[Space]: None") end
 		spaceButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05*5 + 25)
 		spaceButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)
 		spaceButton.DoClick = function()
@@ -84,7 +84,7 @@ else
 		end
 		
 		local weaponButton = vgui.Create("DButton", AMMenu.MainFrame)
-		if active.mouse1 then weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[active["mouse1"]].FullName)
+		if active.mouse1 then weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[active.mouse1].FullName)
 		else weaponButton:SetText("[Mouse1]: None") end
 		weaponButton:SetPos(AMMenu.SX*0.025, AMMenu.SY*0.05*9 + 25)
 		weaponButton:SetSize(AMMenu.SX*0.25, AMMenu.SY*0.15)

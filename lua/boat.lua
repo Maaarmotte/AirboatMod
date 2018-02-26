@@ -142,13 +142,13 @@ function AMBoat:UnmountMods()
 end
 
 function AMBoat:CheckKeys()
-	if self.AMPlayer:CheckKey(IN_SPEED) then
+	if self.AMPlayer:CheckKey(IN_SPEED) and self.Mods["shift"] then
 		self.Mods["shift"]:Activate(self.AMPlayer, self)
 	end
-	if self.AMPlayer:CheckKey(IN_JUMP) then
+	if self.AMPlayer:CheckKey(IN_JUMP) and self.Mods["space"] then
 		self.Mods["space"]:Activate(self.AMPlayer, self)
 	end
-	if self.AMPlayer:CheckKey(IN_ATTACK) then
+	if self.AMPlayer:CheckKey(IN_ATTACK) and self.Mods["mouse1"] then
 		self.Mods["mouse1"]:Activate(self.AMPlayer, self)
 	end
 	if self.AMPlayer:CheckKey(IN_WALK) and self.Mods["powerup"] then
