@@ -59,6 +59,12 @@ else
 		weight = 400
 	})
 
+	surface.CreateFont("AM_LargeText", {
+		font = "Arial",
+		size = 16,
+		weight = 1000
+	})
+
 	surface.CreateFont("AM_SmallText", {
 		font = "Arial",
 		size = 12,
@@ -95,23 +101,24 @@ else
 	end
 
 	local function paint_button_border(self, w, h)
-		local color = Color(225, 225, 225, 255)
+		local color = Color(235, 235, 235, 255)
 
-		if self.Depressed or self:IsSelected() or self:GetToggle() then
+		if self.Depressed or self:IsSelected() or self:GetToggle()  then
 			color = Color(38, 174, 255)
-		elseif self.Hovered then
+		elseif self.Hovered or self.Selected then
 			color = Color(240, 240, 240, 255)
 		end
 
 		surface.SetDrawColor(color)
 		surface.DrawRect(0, 0, w, h)
 
-		surface.SetDrawColor(Color(0, 0, 0, 100))
-		surface.DrawOutlinedRect(0, 0, w, h)
+		surface.SetDrawColor(0, 0, 0, 50)
+		surface.DrawRect(5, h-1, w - 10, 1)
 	end
 
 	function AMMenu.Display(active, mods, color)
 		AMMenu.Settings.Mods = active
+		AMMenu.Settings.Color = color
 
 		AMMenu.MainFrame = vgui.Create("DFrame")
 		AMMenu.MainFrame:SetSize(AMMenu.SX, AMMenu.SY)
@@ -216,7 +223,7 @@ else
 		credit:Dock(FILL)
 		credit:DockMargin(5, 23, 5 ,5)
 		credit:SetFont("AM_SmallText")
-		credit:SetText("Developed by Marmotte, Sir Papate and sirious.")
+		credit:SetText("Developed by Marmotte, Sir Papate, sirious and mandrac.")
 		credit:SetTextColor(Color(255, 255, 255, 50))
 
 		local curentpanel
@@ -313,91 +320,159 @@ else
 				AMMenu.UpdateModel()
 			end)
 
-			local shiftButton = vgui.Create("DButton", optionList)
-			if active.shift and AMMods.Mods[active.shift] then shiftButton:SetText("[Shift]: " .. AMMods.Mods[active.shift].FullName)
-			else shiftButton:SetText("[Shift]: None") end
+			local selectList = vgui.Create("DPanel", modelFrame)
+			selectList:Dock(LEFT)
+			selectList:DockMargin(0, 0, 0, 0)
+			selectList:SetWide(0)
+			selectList.IsOpened = name
 
-			shiftButton:Dock(TOP)
-			shiftButton.Paint = paint_button_border
-			shiftButton:SetFont("AM_Text")
-			shiftButton:DockMargin(5, 5, 5, 5)
-			shiftButton:SetTall(50)
-			shiftButton.DoClick = function()
-				local submenu = DermaMenu()
-				for _, mod in ipairs(mods) do
-					if AMMods.Mods[mod].Type == "shift" then
-						submenu:AddOption(AMMods.Mods[mod].FullName, function()
-							active.shift = mod
-							AMMenu.UpdateModel()
-							shiftButton:SetText("[Shift]: " .. AMMods.Mods[mod].FullName)
-						end)
-					end
-				end
+			function selectList:Paint(w, h)
+				DrawBlur(self, 2, 2)
 
-				submenu:AddOption("None", function()
-					active.shift = ""
-					AMMenu.UpdateModel()
-					shiftButton:SetText("[Shift]: None")
-				end)
-				submenu:Open()
+				surface.SetDrawColor(0, 0, 0, 100)
+				surface.DrawRect(0, 0, w, h)
+
+				surface.SetDrawColor(0, 0, 0, 100)
+				surface.DrawRect(0, 0, 3, h)
 			end
 
-			local spaceButton = vgui.Create("DButton", optionList)
-			if active.space and AMMods.Mods[active.space] then spaceButton:SetText("[Space]: " .. AMMods.Mods[active.space].FullName)
-			else spaceButton:SetText("[Space]: None") end
+			function selectList:Open(name, but, callback)
+				if self.IsOpened and self.IsOpened ~= name then
+					self:Close(function()
+						self:Open(name, but, callback)
+					end)
+				elseif self.IsOpened == name then
+					self:Close()
+				elseif not self.IsOpened then
+					self.IsOpened = name
+					but.Selected = true
+					self.SelectedBut = but
 
-			spaceButton:Dock(TOP)
-			spaceButton.Paint = paint_button_border
-			spaceButton:SetFont("AM_Text")
-			spaceButton:DockMargin(5, 5, 5, 5)
-			spaceButton:SetTall(50)
-			spaceButton.DoClick = function()
-				local submenu = DermaMenu()
-				for _, mod in ipairs(mods) do
-					if AMMods.Mods[mod].Type == "space" then
-						submenu:AddOption(AMMods.Mods[mod].FullName, function()
-							active.space = mod
-							AMMenu.UpdateModel()
-							spaceButton:SetText("[Space]: " .. AMMods.Mods[mod].FullName)
-						end)
-					end
+					selectList:Clear()
+					selectList:SizeTo(175, selectList:GetTall(), 0.4)
+
+					callback()
 				end
-
-				submenu:AddOption("None", function()
-					active.space = ""
-					AMMenu.UpdateModel()
-					spaceButton:SetText("[Space]: None")
-				end)
-				submenu:Open()
 			end
 
-			local weaponButton = vgui.Create("DButton", optionList)
-			if active.mouse1 and AMMods.Mods[active.mouse1] then weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[active.mouse1].FullName)
-			else weaponButton:SetText("[Mouse1]: None") end
+			function selectList:Close(callback)
+				self.SelectedBut.Selected = nil
+				self.SelectedBut = nil
+				self.IsOpened = nil
+				selectList:SizeTo(0, selectList:GetTall(), 0.4, 0, -1, callback)
+			end
 
-			weaponButton:Dock(TOP)
-			weaponButton.Paint = paint_button_border
-			weaponButton:SetFont("AM_Text")
-			weaponButton:DockMargin(5, 5, 5, 5)
-			weaponButton:SetTall(50)
-			weaponButton.DoClick = function()
-				local submenu = DermaMenu()
-				for _, mod in ipairs(mods) do
-					if AMMods.Mods[mod].Type == "mouse1" then
-						submenu:AddOption(AMMods.Mods[mod].FullName, function()
-							active.mouse1 = mod
-							AMMenu.UpdateModel()
-							weaponButton:SetText("[Mouse1]: " .. AMMods.Mods[mod].FullName)
-						end)
-					end
+			function selectList:AddBut(name, description, callback)
+				local button = vgui.Create("DButton", selectList)
+				button:Dock(TOP)
+				button:SetTall(60)
+				button:SetText("")
+
+				function button:DoClick()
+					selectList:Close()
+
+					callback(self)
 				end
 
-				submenu:AddOption("None", function()
-					active.mouse1 = ""
-					AMMenu.UpdateModel()
-					weaponButton:SetText("[Mouse1]: None")
+				function button:Paint(w, h)
+					local color = Color(220, 220, 220, 0)
+
+					if self.Depressed or self:IsSelected() or self:GetToggle() then
+						color = Color(55, 174, 255)
+					elseif self.Hovered or self.selected then
+						color = Color(255, 255, 255, 5)
+					end
+
+					surface.SetDrawColor(color)
+					surface.DrawRect(0, 0, w, h)
+
+
+					surface.SetDrawColor(255, 255, 255, 20)
+					surface.DrawRect(10, h-1, w - 20, 1)
+				end
+
+				local title = vgui.Create("DLabel", button)
+				title:Dock(FILL)
+				title:DockMargin(10, 5, 5, 0)
+				title:SetText(name)
+				title:SetFont("AM_LargeText")
+			end
+
+			for _, nicekey in pairs({"Shift", "Space", "Mouse1"}) do
+				local key = string.lower(nicekey)
+
+				local button = vgui.Create("DButton", optionList)
+				if active[key] and AMMods.Mods[active[key]] then button:SetText("[" .. nicekey .. "]: " .. AMMods.Mods[active[key]].FullName)
+				else button:SetText("[" .. nicekey .. "]: None") end
+
+				button:Dock(TOP)
+				button.Paint = paint_button_border
+				button:SetFont("AM_Text")
+				button:DockMargin(0, 0, 0, 0)
+				button:SetTall(60)
+				button.DoClick = function()
+					selectList:Open(key, button, function()
+						for _, mod in ipairs(mods) do
+							if AMMods.Mods[mod].Type == key then
+								selectList:AddBut(AMMods.Mods[mod].FullName, nil, function()
+									active[key] = mod
+									AMMenu.UpdateModel()
+									button:SetText("[" .. nicekey .. "]: " .. AMMods.Mods[mod].FullName)
+								end)
+							end
+						end
+
+						selectList:AddBut("None", nil, function()
+							active[key] = ""
+							AMMenu.UpdateModel()
+							button:SetText("[" .. nicekey .. "]: None")
+						end)
+					end)
+				end
+			end
+
+			colors = {
+				Color(196, 185, 155),
+				Color(211, 48, 48),
+				Color(230, 84, 140),
+				Color(152, 34, 175),
+				Color(68, 52, 238),
+				Color(30, 144, 209),
+				Color(76, 213, 213),
+				Color(67, 190, 94),
+				Color(198, 203, 75),
+				Color(200, 160, 51)
+			}
+
+			local button = vgui.Create("DButton", optionList)
+			button:SetText("Color")
+			button:Dock(TOP)
+			button.Paint = paint_button_border
+			button:SetFont("AM_Text")
+			button:DockMargin(0, 0, 0, 0)
+			button:SetTall(60)
+			button.DoClick = function()
+				selectList:Open("color", button, function()
+					for _, c in pairs(colors) do
+						local button = vgui.Create("DButton", selectList)
+						button:Dock(TOP)
+						button:DockMargin(10, 10, 10, 0)
+						button:SetTall(20)
+						button:SetText("")
+
+						function button:Paint(w, h)
+							surface.SetDrawColor(c)
+							surface.DrawRect(0, 0, w, h)
+						end
+
+						function button:DoClick()
+							modelFrame:SetColor(c)
+							selectList:Close()
+
+							AMMenu.Settings.Color = c
+						end
+					end
 				end)
-				submenu:Open()
 			end
 		end)
 

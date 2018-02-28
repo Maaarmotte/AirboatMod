@@ -64,6 +64,9 @@ function AMPlayer:GetPlaying()
 end
 
 function AMPlayer:SetSettings(settings)
+	settings.Color.a = 255
+	self.Color = settings.Color
+
 	for key, mod in pairs(settings.Mods) do
 		if not AMMods.Mods[mod] then
 			amPlayer:UnsetKey(key)
