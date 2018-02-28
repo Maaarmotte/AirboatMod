@@ -130,16 +130,17 @@ function AMBoat:Initialize()
 end
 
 function AMBoat:Spawn()
-	local ply = self.AMPlayer.Entity
+	local amPly = self.AMPlayer
+	local ply = amPly.Entity
 	local boat = self:GetEntity()
 
-	self.Entity:SetColor(self.AMPlayer.Color)
+	self.Entity:SetColor(amPly.Color)
 
 	self:AddInvulnerableTime(3)
 	self:SetHealth(15)
 	self:UnmountMods()
 
-	for key, modid in pairs(self.Mods) do
+	for key, modid in pairs(amPly.Mods) do
 		if modid ~= "" then
 			self:SetMod(modid)
 		else

@@ -299,6 +299,8 @@ else
 
 				for _, prop in pairs(AMMenu.Props) do
 					if IsValid(prop) then
+						local c = prop:GetColor()
+						render.SetColorModulation(c.r/255, c.g/255, c.b/255)
 						prop:DrawModel()
 					end
 				end
