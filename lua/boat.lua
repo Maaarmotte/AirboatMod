@@ -1,7 +1,7 @@
 util.AddNetworkString("am_boat_update")
 
 AMBoat = {}
-AMBoat_mt = { __index = AMBoat }
+AMBoat_mt = {__index = function(tab, key) return AMBoat[key] end}
 
 -- Constructor
 function AMBoat.New()
@@ -59,14 +59,19 @@ function AMBoat:SetHealth(value)
 	self.Health = value
 end
 
-function AMBoat:SetPowerUp(powerupName)
-	self.AMPowerUp = AMPowerUps.Instantiate(powerupName)
-	AMPowerUps.Initalite(self.AMPowerUp, self)
+function AMBoat:MountPowerUp(name)
+	self.Mods["powerup"] = AMMods.Instantiate(name)
+	self.Mods["powerup"]:Mount(self)
+
 	self:Synchronize()
 end
 
-function AMBoat:UnsetPowerUp()
-	self.AMPowerUp = nil
+
+function AMBoat:UnmountPowerUp()
+	self.Mods["powerup"]:Unmount(self)
+	self.Mods["powerup"] = nil
+	self.PowerUpInfo = {}
+
 	self:Synchronize()
 end
 
@@ -91,7 +96,7 @@ function AMBoat:ParentHolo(model, pos, ang, scale, material, color)
 	end
 end
 
-function AMBoat:Spawn()
+function AMBoat:Initialize()
 	if not self.AMPlayer then
 		print("[Airboat] Can't spawn airboat without owner !")
 		return
@@ -108,7 +113,9 @@ function AMBoat:Spawn()
 	self.Entity:AddCallback("PhysicsCollide", AMBoat.CollisionCallback)
 	self.Entity.AMBoat = self
 	self.Entity.Use = function(self, activator, caller, useType, value) activator:ChatPrint("Coming soon !") end
-	
+
+	self.Entity:SetSubMaterial(0, "models/airboat-mod/airboat001")
+
 	self.SmokeEntity = ents.Create("prop_physics")
 	self.SmokeEntity:SetModel("models/props_junk/PopCan01a.mdl")
 	self.SmokeEntity:SetPos(self.Entity:LocalToWorld(Vector(0, -110, 25)))
@@ -117,9 +124,68 @@ function AMBoat:Spawn()
 	self.SmokeEntity:SetParent(self.Entity)
 	self.SmokeEntity:SetColor(Color(0, 0, 0, 0))
 	self.SmokeEntity:SetRenderMode(RENDERMODE_TRANSALPHA)
-	
+
 	self.Entity:EmitSound("ui/itemcrate_smash_ultrarare_short.wav")
 	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
+end
+
+function AMBoat:Spawn()
+	local amPly = self.AMPlayer
+	local ply = amPly.Entity
+	local boat = self:GetEntity()
+
+	self.Entity:SetColor(amPly.Color)
+
+	self:AddInvulnerableTime(3)
+	self:SetHealth(15)
+	self:UnmountMods()
+
+	for key, modid in pairs(amPly.Mods) do
+		if modid ~= "" then
+			self:SetMod(modid)
+		else
+			self:UnsetKey(key)
+		end
+	end
+
+	self:UnsetKey("powerup")
+
+	self:MountMods()
+
+
+	self:Synchronize()
+
+	if not AMMain.Spawns[game.GetMap()] then return end
+
+	-- Move the boat to a random spot in the area
+	local rand = VectorRand()
+	rand.x = math.abs(rand.x)
+	rand.y = math.abs(rand.y)
+	rand.z = math.abs(rand.z)
+	local areaV1 = AMMain.Spawns[game.GetMap()][1]
+	local areaV2 = AMMain.Spawns[game.GetMap()][2]
+	local pos = areaV1 + rand*(areaV2 - areaV1)
+	pos.z = (areaV1.z + areaV2.z)/2
+	boat:SetPos(pos)
+end
+
+function AMBoat:SetMod(modid)
+	local mod = AMMods.Mods[modid]
+	if not mod then return end
+
+	local key = mod.Type
+
+	if self.Mods[key] then
+		self:UnsetKey(key)
+	end
+
+	self.Mods[key] = AMMods.Instantiate(modid)
+	-- self.Mods[key]:Mount(self)
+end
+
+function AMBoat:UnsetKey(key)
+	-- self.Mods[key]:Unmount(self)
+	self.Mods[key] = nil
 end
 
 function AMBoat:MountMods()
@@ -139,30 +205,40 @@ function AMBoat:UnmountMods()
 end
 
 function AMBoat:CheckKeys()
-	if self.AMPlayer:CheckKey(IN_SPEED) then
+	if self.AMPlayer:CheckKey(IN_SPEED) and self.Mods["shift"] then
 		self.Mods["shift"]:Activate(self.AMPlayer, self)
 	end
-	if self.AMPlayer:CheckKey(IN_JUMP) then
+	if self.AMPlayer:CheckKey(IN_JUMP) and self.Mods["space"] then
 		self.Mods["space"]:Activate(self.AMPlayer, self)
 	end
-	if self.AMPlayer:CheckKey(IN_ATTACK) then
+	if self.AMPlayer:CheckKey(IN_ATTACK) and self.Mods["mouse1"] then
 		self.Mods["mouse1"]:Activate(self.AMPlayer, self)
 	end
-	if self.AMPlayer:CheckKey(IN_WALK) then
-		if self.AMPowerUp then
-			AMPowerUps.Use(self:GetPowerUp(), self)
-		end
+	if self.AMPlayer:CheckKey(IN_WALK) and self.Mods["powerup"] then
+		self.Mods["powerup"]:Activate(self.AMPlayer, self)
 	end
 end
 
 function AMBoat:IsPlaying()
-	return self.Entity and self.Entity:IsValid() and self.AMPlayer and self.AMPlayer:GetEntity() and self.AMPlayer:GetEntity():IsValid() and self.Entity:GetDriver() == self.AMPlayer:GetEntity()
+	return IsValid(self.Entity) and self.AMPlayer and IsValid(self.AMPlayer:GetEntity()) and self.AMPlayer:GetPlaying()
 end
 
 function AMBoat:Damage(amount, attacker)
-	local amount = hook.Call("AMBoat_Damage", GM, self, amount, attacker.AMBoat) or amount
+	for _, mod in pairs(self.Mods) do
+		if mod.OnDamage then
+			amount = mod:OnDamage(self, attacker, amount)
+		end
+	end
 
-	if not blockdmg and self:IsPlaying() and self.Health > 0 then
+	if attacker.AMBoat then
+		for _, mod in pairs(attacker.AMBoat.Mods) do
+			if mod.OnDamage then
+				amount = mod:OnAttack(attacker.AMBoat, self, amount)
+			end
+		end
+	end
+
+	if self:IsPlaying() and self.Health > 0 then
 		self.Health = math.max(0, self.Health - amount)
 		if self.Health == 0 then
 			self:OnDeath(attacker)
@@ -172,23 +248,41 @@ function AMBoat:Damage(amount, attacker)
 end
 
 function AMBoat:AddInvulnerableTime(value)
+	if not IsValid(self.Entity) then return end
 	self.LastBump = CurTime() + value
 	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
-	self.Entity:SetColor(Color(255, 255, 255, 100))
-	
+
+	local color = self.Entity:GetColor()
+	color.a = 100
+	self.Entity:SetColor(color)
+
 	timer.Create("invul" .. self.Entity:EntIndex(), value, 1, function()
-		self.Entity:SetColor(Color(255, 255, 255, 255))
+		if not IsValid(self.Entity) then return end
+		color.a = 255
+		self.Entity:SetColor(color)
 	end)
 end
 
 function AMBoat:Synchronize()
 	if self.AMPlayer and self.AMPlayer:GetEntity() then
-		local powerup = "None"
-		if self:GetPowerUp() then
-			powerup = self:GetPowerUp().FullName or "None"
+		local mods = {}
+
+		for key, mod in pairs(self.Mods) do
+			mods[key] = {
+				Name = mod.Name,
+				FullName = mod.FullName,
+				Info = mod.ClientInfo or {}
+			}
 		end
+
 		net.Start("am_boat_update")
-			net.WriteTable({ Entity=self.Entity, Health=self.Health, Player=self.AMPlayer:GetEntity(), Playing=self:IsPlaying(), PowerUp=powerup })
+			net.WriteTable({
+				Entity	= self.Entity,
+				Health	= self.Health,
+				Player	= self.AMPlayer:GetEntity(),
+				Playing	= self:IsPlaying(),
+				Mods	= mods
+			})
 		net.Send(self.AMPlayer:GetEntity())
 	end
 end
@@ -196,7 +290,7 @@ end
 function AMBoat:ExplodeEffect()
 	self.Entity:EmitSound("items/cart_explode.wav")
 	self.Entity:EmitSound("weapons/demo_charge_hit_flesh_range1.wav")
-	
+
 	ParticleEffectAttach("asplode_hoodoo_flash", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
 	ParticleEffectAttach("asplode_hoodoo_shockwave", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
 	ParticleEffectAttach("asplode_hoodoo_embers", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
@@ -211,26 +305,28 @@ function AMBoat:OnDeath(attacker)
 
 	-- Play effects and sounds
 	local other = attacker.AMBoat
-	
+
 	self:ExplodeEffect()
-	
+
 	if other and other:IsPlaying() then
 		other:GetEntity():EmitSound("ambient/bumper_car_cheer" .. math.random(3) .. ".wav")
 		timer.Simple(1, function() other:GetEntity():EmitSound("items/samurai/tf_conch.wav") end)
 	end
-	
-	-- Make it invulnerable et respawn player	
+
+	-- Make it invulnerable et respawn player
 	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
 	self.Entity:SetColor(Color(255, 255, 255, 100))
-	
-	timer.Simple(2.5, function() 
-		self.AMPlayer:Respawn()
+
+	timer.Simple(4, function()
+		if not self.AMPlayer.Entity:Alive() then
+			self.AMPlayer:Respawn()
+		end
 	end)
-	
-	timer.Simple(2.75, function()
-		local ply = self.AMPlayer:GetEntity()
-		ply:EnterVehicle(self.Entity)
-	end)
+
+	-- timer.Simple(2.75, function()
+	-- 	local ply = self.AMPlayer:GetEntity()
+	-- 	ply:EnterVehicle(self.Entity)
+	-- end)
 end
 
 function AMBoat:Tick()
@@ -248,14 +344,14 @@ function AMBoat.CollisionCallback(boat, data)
 	-- Be sure that this boat is valid and currently playing
 	local self = boat.AMBoat
 	if not self or not boat:IsValid() or not self:IsPlaying() then return end
-	
+
 	-- Don't take too much collisions at the same time
 	if CurTime() - self.LastBump < 0.5 then return end
-	
+
 	-- Retrieve the entity hit and try to retrieve its boat structure
 	local otherEntity = data.HitEntity
 	local other = otherEntity.AMBoat
-	
+
 	-- Compute the damage this boat is taking
 	local selfVel = 0
 	local otherVel = 0
@@ -267,7 +363,7 @@ function AMBoat.CollisionCallback(boat, data)
 		selfVel = data.OurOldVelocity:Dot(collisionAxis)
 		otherVel = data.TheirOldVelocity:Dot(collisionAxis)
 	end
-	
+
 	-- Apply the damage if the velocity is big enough
 	if math.max(selfVel, otherVel) > 500 then
 		if otherEntity:IsWorld() then

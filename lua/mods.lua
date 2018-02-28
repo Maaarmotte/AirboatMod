@@ -1,10 +1,5 @@
 AMMod = {}
-AMMod_mt = { __index = AMMod }
-
-AMMods = {}
-AMMods.Mods = {}
-
-local AMMods = AMMods
+AMMod_mt = { __index = function(tab, key) return AMMod[key] end}
 
 function AMMod.New()
 	local self = {}
@@ -16,20 +11,32 @@ function AMMod.New()
 	self.Mounted = false
 	self.Data = nil
 	self.Props = {}
+	self.ClientInfo = {}
 	return self
 end
 
 function AMMod:Activate(amPly, amBoat)
 	if CurTime() - self.LastActivation > self.Delay then
 		self:Run(amPly, amBoat)
-		self.LastActivation = CurTime()	
+		self.LastActivation = CurTime()
 	end
 end
 
 function AMMod:MountHolo(amBoat, model, pos, ang, scale, material, color)
-	local ent = amBoat:ParentHolo(model, pos, ang, scale, material, color)
-	table.insert(self.Props, ent)
-	return ent
+	if SERVER then
+		local ent = amBoat:ParentHolo(model, pos, ang, scale, material, color)
+		table.insert(self.Props, ent)
+		return ent
+	else
+		local ent = AMMenu.MountHolo(amBoat, model, pos, ang, scale, material, color)
+		return ent
+	end
+end
+
+function AMMod:SendInfoToClent(amBoat, info)
+	self.ClientInfo = istable(info) and info or {}
+
+	amBoat:Synchronize()
 end
 
 -- Will be overrided !
@@ -82,4 +89,21 @@ end
 
 function AMMods.Register(mod)
 	AMMods.Mods[mod.Name] = mod
+end
+
+
+-- PowerUp
+
+function AMMods.GetRandomPowerUp()
+	local keys	= {}
+
+	for id, mod in pairs(AMMods.Mods) do
+		if mod.Type == "powerup" then
+			table.insert(keys, id)
+		end
+	end
+
+	local id = math.random(1, #keys)
+
+	return AMMods.Mods[keys[id]]
 end

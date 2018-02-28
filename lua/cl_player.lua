@@ -1,5 +1,5 @@
 AMPlayer = {}
-AMPlayer_mt = { __index = AMPlayer }
+AMPlayer_mt = {__index = function(tab, key) return AMPlayer[key] end}
 
 -- Constructor
 function AMPlayer.New(ply)
@@ -8,7 +8,8 @@ function AMPlayer.New(ply)
 
 	self.Entity = ply
 	self.AMBoat = nil
-	
+	self.Playing = false
+
 	return self
 end
 
@@ -34,4 +35,8 @@ end
 -- Setters
 function AMPlayer:SetAirboat(amBoat)
 	self.AMBoat = amBoat
+end
+
+function AMPlayer:IsPlaying()
+	return self.Playing
 end

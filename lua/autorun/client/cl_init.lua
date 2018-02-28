@@ -1,3 +1,7 @@
+
+AMMods = {}
+AMMods.Mods = {}
+
 -- Run the files
 include("utils.lua")
 include("derma.lua")
