@@ -66,9 +66,11 @@ function AMBoat:MountPowerUp(name)
 	self:Synchronize()
 end
 
+
 function AMBoat:UnmountPowerUp()
 	self.Mods["powerup"]:Unmount(self)
 	self.Mods["powerup"] = nil
+	self.PowerUpInfo = {}
 
 	self:Synchronize()
 end
@@ -176,7 +178,7 @@ function AMBoat:CheckKeys()
 end
 
 function AMBoat:IsPlaying()
-	return self.Entity and self.Entity:IsValid() and self.AMPlayer and self.AMPlayer:GetEntity() and self.AMPlayer:GetEntity():IsValid() and self.Entity:GetDriver() == self.AMPlayer:GetEntity()
+	return IsValid(self.Entity) and self.AMPlayer and IsValid(self.AMPlayer:GetEntity()) and self.AMPlayer:GetPlaying() and self.Entity:GetDriver() == self.AMPlayer:GetEntity()
 end
 
 function AMBoat:Damage(amount, attacker)
@@ -204,25 +206,39 @@ function AMBoat:Damage(amount, attacker)
 end
 
 function AMBoat:AddInvulnerableTime(value)
-	if not self.Entity then return end
+	if not IsValid(self.Entity) then return end
 	self.LastBump = CurTime() + value
 	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
 	self.Entity:SetColor(Color(255, 255, 255, 100))
 
 	timer.Create("invul" .. self.Entity:EntIndex(), value, 1, function()
+		if not IsValid(self.Entity) then return end
 		self.Entity:SetColor(Color(255, 255, 255, 255))
 	end)
 end
 
 function AMBoat:Synchronize()
 	if self.AMPlayer and self.AMPlayer:GetEntity() then
-		local powerup = "None"
-		if self.Mods["powerup"] then
-			powerup = self.Mods["powerup"].FullName or "None"
+		local mods = {}
+
+		for key, mod in pairs(self.Mods) do
+			mods[key] = {
+				Name = mod.Name,
+				FullName = mod.FullName,
+				Info = mod.ClientInfo or {}
+			}
 		end
 
+		print("cc", self:IsPlaying())
+
 		net.Start("am_boat_update")
-			net.WriteTable({ Entity=self.Entity, Health=self.Health, Player=self.AMPlayer:GetEntity(), Playing=self:IsPlaying(), PowerUp=powerup })
+			net.WriteTable({
+				Entity	= self.Entity,
+				Health	= self.Health,
+				Player	= self.AMPlayer:GetEntity(),
+				Playing	= self:IsPlaying(),
+				Mods	= mods
+			})
 		net.Send(self.AMPlayer:GetEntity())
 	end
 end

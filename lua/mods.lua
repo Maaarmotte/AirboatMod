@@ -11,6 +11,7 @@ function AMMod.New()
 	self.Mounted = false
 	self.Data = nil
 	self.Props = {}
+	self.ClientInfo = {}
 	return self
 end
 
@@ -30,6 +31,12 @@ function AMMod:MountHolo(amBoat, model, pos, ang, scale, material, color)
 		local ent = AMMenu.MountHolo(amBoat, model, pos, ang, scale, material, color)
 		return ent
 	end
+end
+
+function AMMod:SendInfoToClent(amBoat, info)
+	self.ClientInfo = istable(info) and info or {}
+
+	amBoat:Synchronize()
 end
 
 -- Will be overrided !

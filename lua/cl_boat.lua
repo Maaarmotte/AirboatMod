@@ -3,12 +3,15 @@ AMBoat_mt = { __index = AMBoat }
 
 -- Constructor
 function AMBoat.New()
-	local self      	= {}
-	self.Entity     	= nil
-	self.Health     	= 15
-	self.Playing 		= false
-	self.AMPlayer 		= nil
-	self.AMPowerUp		= { FullName="None" }
+	local self = {}
+
+	self.Entity		= nil
+	self.Health		= 15
+	self.Playing	= false
+	self.AMPlayer	= nil
+	self.AMPowerUp	= { FullName="None" }
+	self.Mods 		= {}
+
 	setmetatable(self, AMBoat_mt)
 
 	return self
@@ -74,6 +77,22 @@ net.Receive("am_boat_update", function(len)
 		amBoat:SetPlaying(data.Playing)
 		amBoat:SetPowerUp(data.PowerUp)
 
+		amBoat.Mods = data.Mods
+
 		amPlayer:SetAirboat(amBoat)
+	end
+
+	if amPlayer then
+		amPlayer.Playing = data.Playing
+
+		if amPlayer:GetEntity() == LocalPlayer() then
+			if amPlayer:IsPlaying() then
+				AMHud.Build()
+				print("coucou")
+			else
+				print("byebye")
+				AMHud.Remove()
+			end
+		end
 	end
 end)

@@ -12,6 +12,7 @@ function AMPlayer.New(ply)
 	self.Playing = false
 	self.Mods = {shift="boost", space="jump", mouse1=""}
 	self.OwnedMods = { "boost", "jump", "boost2", "flamethrower", "freezer" }
+	self.Score = 0
 
 	ply.AMPlayer = self
 
@@ -73,6 +74,10 @@ end
 
 function AMPlayer:Spawn()
 	local ply = self.Entity
+
+	if not ply:Alive() then
+		ply:Spawn()
+	end
 
 	local amBoat = self:GetAirboat() or AMBoat.New()
 
