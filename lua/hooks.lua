@@ -1,13 +1,13 @@
 -- Command to enter the game
 hook.Add("PlayerSay", "Airboat", function(ply, text, isTeam)
 	if text == "!boat" then
-		amPlayer = AMMain.NewPlayer(ply)
+		local amPlayer = AMMain.NewPlayer(ply)
 		AMMenu.SendMenu(amPlayer)
 	end
 end)
 
 concommand.Add("airboatmod_play", function(ply, cmd, args)
-	amPlayer = AMMain.NewPlayer(ply)
+	local amPlayer = AMMain.NewPlayer(ply)
 	AMMenu.SendMenu(amPlayer)
 end)
 

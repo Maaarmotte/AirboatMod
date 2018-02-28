@@ -59,7 +59,7 @@ if SERVER then
 		self.effect:SetAngles(Angle(0,CurTime()*60*2,0))
 		self.effect:SetNoDraw(false)
 		self.effect:SetModel(self.powerup.Model)
-		e:SetModelScale(self.powerup.ModelScale, 0)
+		self.effect:SetModelScale(self.powerup.ModelScale, 0)
 
 		sound.Play(Sound("garrysmod/balloon_pop_cute.wav"), self:GetPos(), 75)
 	end

@@ -24,10 +24,31 @@ end
 function mod:Unmount(amBoat)
 end
 
+function mod.Draw(info, w, y, amBoat, amPlayer)
+	surface.SetFont("am_hud_title")
+	surface.SetTextColor(235, 235, 235, 255)
+	surface.SetTextPos(12, y)
+	surface.DrawText(mod.FullName)
+
+	local bw = w - 20
+	local time = 1
+
+	if info.Start then
+		time = math.min((CurTime() - info.Start)/mod.Delay, 1)
+	end
+
+	surface.SetDrawColor(75, 75, 75, 255)
+	surface.DrawRect(10, y + 20, bw, 20)
+	surface.SetDrawColor(200, 31, 19, 255)
+	surface.DrawRect(10, y + 20, bw * time, 20)
+
+	return 40
+end
+
 function mod:Think(amBoat)
 	local t = CurTime()
 	local yaw = 5
-	if t - self.LastBoost < self.Delay then 
+	if t - self.LastBoost < self.Delay then
 		yaw = yaw + 10
 	else
 		yaw = yaw + math.max(2 - (t - self.LastBoost - self.Delay), 0)*10
@@ -53,6 +74,8 @@ end
 function mod:Run(amPly, amBoat)
 	local boat = amBoat:GetEntity()
 	local physobj = boat:GetPhysicsObject()
+
+	self:SendInfoToClent(amBoat, {Start = CurTime()})
 
 	boat:EmitSound("weapons/bumper_car_speed_boost_start.wav")
     ParticleEffectAttach("smoke_whitebillow", PATTACH_ABSORIGIN_FOLLOW, amBoat:GetSmokeEntity(), 0)

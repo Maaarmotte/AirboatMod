@@ -52,7 +52,7 @@ function AMPlayer:CheckKey(key)
 end
 
 function AMPlayer:Respawn()
-	AMMenu.SendMenu(amPlayer)
+	AMMenu.SendMenu(self)
 end
 
 function AMPlayer:SetPlaying(value)
@@ -69,9 +69,9 @@ function AMPlayer:SetSettings(settings)
 
 	for key, mod in pairs(settings.Mods) do
 		if not AMMods.Mods[mod] then
-			amPlayer:UnsetKey(key)
+			self:UnsetKey(key)
 		else
-			amPlayer:SetMod(mod)
+			self:SetMod(mod)
 		end
 	end
 end

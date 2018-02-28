@@ -226,14 +226,14 @@ end
 function AMBoat:Damage(amount, attacker)
 	for _, mod in pairs(self.Mods) do
 		if mod.OnDamage then
-			amount = mod:OnDamage(self, attacker, amount)
+			amount = mod:OnDamage(self, attacker, amount) or amount
 		end
 	end
 
 	if attacker.AMBoat then
 		for _, mod in pairs(attacker.AMBoat.Mods) do
-			if mod.OnDamage then
-				amount = mod:OnAttack(attacker.AMBoat, self, amount)
+			if isfunction(mod.OnAttack) then
+				amount = mod:OnAttack(attacker.AMBoat, self, amount) or amount
 			end
 		end
 	end

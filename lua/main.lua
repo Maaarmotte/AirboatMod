@@ -1,5 +1,5 @@
 
-AMMain.Spawns["gm_construct_flatgrass_v6-2"] = { Vector(12607.637695, -7303.835938, -737.583374), Vector(7220.501465, -3177.291260, -168.961502) }
+AMMain.Spawns["gm_construct_flatgrass_v6-2"] = { Vector(12607.637695, -7303.835938, -507.583374), Vector(7220.501465, -3177.291260, -168.961502) }
 AMMain.Spawns["gm_excess_waters"] = { Vector(-1042, -10021, 654), Vector(-2733, -8171, 454) }
 AMMain.Spawns["gm_excess_construct_13"] = { Vector(2038, -10431, -34), Vector(5736, -12471, 166)}
 
