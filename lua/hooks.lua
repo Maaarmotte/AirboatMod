@@ -29,7 +29,7 @@ end)
 -- Stop the game when the player left or is killed
 hook.Add("CanExitVehicle", "Airboat", function(boat, ply)
 	local amPlayer = ply.AMPlayer
-	print(amPlayer)
+	
 	if amPlayer then
 		AMMenu.SendMenu(amPlayer)
 		return false

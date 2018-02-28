@@ -54,7 +54,6 @@ function mod:Run(amPly, amBoat)
 	physobj:SetVelocity(boat:GetVelocity() + boat:GetForward()*1000)
 	boat:EmitSound("weapons/bumper_car_speed_boost_start.wav")
 
-print(self.Amount)
 	if self.Amount <= 0 then
 		amBoat:UnmountPowerUp()
 	end

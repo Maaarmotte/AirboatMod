@@ -265,8 +265,6 @@ function AMBoat:Synchronize()
 			}
 		end
 
-		print("cc", self:IsPlaying())
-
 		net.Start("am_boat_update")
 			net.WriteTable({
 				Entity	= self.Entity,

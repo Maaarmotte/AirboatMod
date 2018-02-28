@@ -88,9 +88,7 @@ net.Receive("am_boat_update", function(len)
 		if amPlayer:GetEntity() == LocalPlayer() then
 			if amPlayer:IsPlaying() then
 				AMHud.Build()
-				print("coucou")
 			else
-				print("byebye")
 				AMHud.Remove()
 			end
 		end
