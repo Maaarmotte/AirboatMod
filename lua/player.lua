@@ -13,6 +13,7 @@ function AMPlayer.New(ply)
 	self.Mods = {shift="boost", space="jump", mouse1=""}
 	self.OwnedMods = { "boost", "jump", "boost2", "flamethrower", "freezer" }
 	self.Score = 0
+	self.Color = Color(196, 185, 155)
 
 	ply.AMPlayer = self
 

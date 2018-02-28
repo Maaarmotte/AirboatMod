@@ -114,6 +114,8 @@ function AMBoat:Initialize()
 	self.Entity.AMBoat = self
 	self.Entity.Use = function(self, activator, caller, useType, value) activator:ChatPrint("Coming soon !") end
 
+	self.Entity:SetSubMaterial(0, "models/airboat-mod/airboat001")
+
 	self.SmokeEntity = ents.Create("prop_physics")
 	self.SmokeEntity:SetModel("models/props_junk/PopCan01a.mdl")
 	self.SmokeEntity:SetPos(self.Entity:LocalToWorld(Vector(0, -110, 25)))
@@ -131,6 +133,8 @@ function AMBoat:Spawn()
 	local ply = self.AMPlayer.Entity
 	local boat = self:GetEntity()
 
+	self.Entity:SetColor(self.AMPlayer.Color)
+
 	self:AddInvulnerableTime(3)
 	self:SetHealth(15)
 	self:UnmountMods()
@@ -146,6 +150,7 @@ function AMBoat:Spawn()
 	self:UnsetKey("powerup")
 
 	self:MountMods()
+
 
 	self:Synchronize()
 
@@ -245,11 +250,15 @@ function AMBoat:AddInvulnerableTime(value)
 	if not IsValid(self.Entity) then return end
 	self.LastBump = CurTime() + value
 	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
-	self.Entity:SetColor(Color(255, 255, 255, 100))
+
+	local color = self.Entity:GetColor()
+	color.a = 100
+	self.Entity:SetColor(color)
 
 	timer.Create("invul" .. self.Entity:EntIndex(), value, 1, function()
 		if not IsValid(self.Entity) then return end
-		self.Entity:SetColor(Color(255, 255, 255, 255))
+		color.a = 255
+		self.Entity:SetColor(color)
 	end)
 end
 

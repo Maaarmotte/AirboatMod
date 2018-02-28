@@ -1,0 +1,12 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/airboat-mod/airboat001"
+	"$surfaceprop" "metal"
+
+		"$colortint_base" "{255 255 255}"
+		"$color2" "{255 255 255}"
+		"$colortint_tmp" "[0 0 0]"
+
+		"$blendtintbybasealpha" "1"
+		"$blendtintcoloroverbase" "0"
+}

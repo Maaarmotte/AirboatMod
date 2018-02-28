@@ -6,6 +6,11 @@ hook.Add("PlayerSay", "Airboat", function(ply, text, isTeam)
 	end
 end)
 
+concommand.Add("airboatmod_play", function(ply, cmd, args)
+	amPlayer = AMMain.NewPlayer(ply)
+	AMMenu.SendMenu(amPlayer)
+end)
+
 -- Main game ticks
 hook.Add("Tick", "Airboat", AMMain.Tick)
 
@@ -29,8 +34,8 @@ end)
 -- Stop the game when the player left or is killed
 hook.Add("CanExitVehicle", "Airboat", function(boat, ply)
 	local amPlayer = ply.AMPlayer
-	
-	if amPlayer then
+
+	if amPlayer and amPlayer.AMBoat and amPlayer.AMBoat.Entity and amPlayer.AMBoat.Entity == boat then
 		AMMenu.SendMenu(amPlayer)
 		return false
 	end

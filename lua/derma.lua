@@ -17,6 +17,7 @@ if SERVER then
 				end
 				net.WriteTable(active)
 				net.WriteTable(amPlayer.OwnedMods)
+				net.WriteTable(amPlayer.Color)
 			net.Send(amPlayer:GetEntity())
 		end
 	end
@@ -109,7 +110,7 @@ else
 		surface.DrawOutlinedRect(0, 0, w, h)
 	end
 
-	function AMMenu.Display(active, mods)
+	function AMMenu.Display(active, mods, color)
 		AMMenu.Settings.Mods = active
 
 		AMMenu.MainFrame = vgui.Create("DFrame")
@@ -160,7 +161,7 @@ else
 		local title = vgui.Create("DLabel", header)
 		title:Dock(FILL)
 		title:SetFont("AM_Title")
-		title:SetText("Airboad Mod Menu")
+		title:SetText("Airboat Mod Menu")
 		title:DockMargin(5, 5, 5, 5)
 		title:SetWide(200)
 		title:SetTextColor(Color(235, 235, 235))
@@ -291,6 +292,7 @@ else
 			modelFrame:SetModel("models/airboat.mdl")
 			modelFrame:SetCamPos(Vector(-185, -185, 85))
 			modelFrame:SetFOV(50)
+			modelFrame:SetColor(color)
 
 			function modelFrame:DrawModel()
 				self.Entity:DrawModel()
@@ -303,6 +305,7 @@ else
 			end
 
 			AMMenu.Entity = modelFrame:GetEntity()
+			AMMenu.Entity:SetSubMaterial(0, "models/airboat-mod/airboat001")
 
 			timer.Simple(0.01, function()
 				AMMenu.UpdateModel()
@@ -461,6 +464,6 @@ else
 	end
 
 	net.Receive("am_show_menu", function(len)
-		AMMenu.Display(net.ReadTable(), net.ReadTable())
+		AMMenu.Display(net.ReadTable(), net.ReadTable(), net.ReadTable())
 	end)
 end
