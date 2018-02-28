@@ -51,7 +51,7 @@ function AMPlayer:CheckKey(key)
 end
 
 function AMPlayer:Respawn()
-	self.Entity:Spawn()
+	AMMenu.SendMenu(amPlayer)
 end
 
 function AMPlayer:SetPlaying(value)
@@ -84,7 +84,7 @@ function AMPlayer:Spawn()
 	if not amBoat or not amBoat:GetEntity() or not amBoat:GetEntity():IsValid() then
 		self:SetAirboat(amBoat)
 		amBoat:SetPlayer(self)
-		amBoat:Spawn()
+		amBoat:Initialize()
 	end
 
 	local boat = amBoat:GetEntity()
@@ -94,34 +94,7 @@ function AMPlayer:Spawn()
 	ply:EmitSound("ui/itemcrate_smash_ultrarare_short.wav")
 	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, boat, 0)
 
-	amBoat:AddInvulnerableTime(3)
-	amBoat:SetHealth(15)
-	amBoat:UnmountMods()
-
-	for key, modid in pairs(self.Mods) do
-		if modid ~= "" then
-			amBoat:SetMod(modid)
-		else
-			amBoat:UnsetKey(key)
-		end
-	end
-
-	amBoat:MountMods()
-
-	amBoat:Synchronize()
-
-	if not AMMain.Spawns[game.GetMap()] then return end
-
-	-- Move the boat to a random spot in the area
-	local rand = VectorRand()
-	rand.x = math.abs(rand.x)
-	rand.y = math.abs(rand.y)
-	rand.z = math.abs(rand.z)
-	local areaV1 = AMMain.Spawns[game.GetMap()][1]
-	local areaV2 = AMMain.Spawns[game.GetMap()][2]
-	local pos = areaV1 + rand*(areaV2 - areaV1)
-	pos.z = (areaV1.z + areaV2.z)/2
-	boat:SetPos(pos)
+	amBoat:Spawn()
 end
 
 function AMPlayer:IsOwningMod(modid)

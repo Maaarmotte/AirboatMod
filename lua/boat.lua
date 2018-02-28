@@ -96,7 +96,7 @@ function AMBoat:ParentHolo(model, pos, ang, scale, material, color)
 	end
 end
 
-function AMBoat:Spawn()
+function AMBoat:Initialize()
 	if not self.AMPlayer then
 		print("[Airboat] Can't spawn airboat without owner !")
 		return
@@ -125,6 +125,42 @@ function AMBoat:Spawn()
 
 	self.Entity:EmitSound("ui/itemcrate_smash_ultrarare_short.wav")
 	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
+end
+
+function AMBoat:Spawn()
+	local ply = self.AMPlayer.Entity
+	local boat = self:GetEntity()
+
+	self:AddInvulnerableTime(3)
+	self:SetHealth(15)
+	self:UnmountMods()
+
+	for key, modid in pairs(self.Mods) do
+		if modid ~= "" then
+			self:SetMod(modid)
+		else
+			self:UnsetKey(key)
+		end
+	end
+
+	self:UnsetKey("powerup")
+
+	self:MountMods()
+
+	self:Synchronize()
+
+	if not AMMain.Spawns[game.GetMap()] then return end
+
+	-- Move the boat to a random spot in the area
+	local rand = VectorRand()
+	rand.x = math.abs(rand.x)
+	rand.y = math.abs(rand.y)
+	rand.z = math.abs(rand.z)
+	local areaV1 = AMMain.Spawns[game.GetMap()][1]
+	local areaV2 = AMMain.Spawns[game.GetMap()][2]
+	local pos = areaV1 + rand*(areaV2 - areaV1)
+	pos.z = (areaV1.z + areaV2.z)/2
+	boat:SetPos(pos)
 end
 
 function AMBoat:SetMod(modid)
@@ -178,7 +214,7 @@ function AMBoat:CheckKeys()
 end
 
 function AMBoat:IsPlaying()
-	return IsValid(self.Entity) and self.AMPlayer and IsValid(self.AMPlayer:GetEntity()) and self.AMPlayer:GetPlaying() and self.Entity:GetDriver() == self.AMPlayer:GetEntity()
+	return IsValid(self.Entity) and self.AMPlayer and IsValid(self.AMPlayer:GetEntity()) and self.AMPlayer:GetPlaying()
 end
 
 function AMBoat:Damage(amount, attacker)
@@ -273,14 +309,16 @@ function AMBoat:OnDeath(attacker)
 	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
 	self.Entity:SetColor(Color(255, 255, 255, 100))
 
-	timer.Simple(2.5, function()
-		self.AMPlayer:Respawn()
+	timer.Simple(4, function()
+		if not self.AMPlayer.Entity:Alive() then
+			self.AMPlayer:Respawn()
+		end
 	end)
 
-	timer.Simple(2.75, function()
-		local ply = self.AMPlayer:GetEntity()
-		ply:EnterVehicle(self.Entity)
-	end)
+	-- timer.Simple(2.75, function()
+	-- 	local ply = self.AMPlayer:GetEntity()
+	-- 	ply:EnterVehicle(self.Entity)
+	-- end)
 end
 
 function AMBoat:Tick()

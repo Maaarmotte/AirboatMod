@@ -45,3 +45,11 @@ hook.Add("EntityTakeDamage", "Airboat", function(ply, dmg)
 		return true
 	end
 end)
+
+hook.Add("PlayerSpawn", "AirboatMod", function(ply)
+	local amPlayer = ply.AMPlayer
+
+	if amPlayer and amPlayer:GetPlaying() then
+		amPlayer:Spawn()
+	end
+end)
