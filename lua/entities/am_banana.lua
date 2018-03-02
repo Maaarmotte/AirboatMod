@@ -11,7 +11,6 @@ ENT.Instructions  	= ""
 ENT.Spawnable     	= true
 ENT.AdminSpawnable	= true
 ENT.RenderGroup   	= RENDERGROUP_TRANSLUCENT
---TODO spawnicon banana
 
 if SERVER then
 	function ENT:Initialize()
@@ -65,20 +64,16 @@ if SERVER then
 		if ent.AMBoat and ent.AMBoat:IsPlaying() then
 			local delay = 0.1
 			local repetitions = 8
-			local randomNum = math.random(0, 1000)
 			
-			timer.Create("amboat_spin_start_"..randomNum , delay, repetitions, function()
+			timer.Create("amboat_spin_start_"..math.random(0, 1000) , delay, repetitions, function()
 				self:Spin(ent)
 			end)
 			
 			self:SetNotSolid(true)
 			self.effect:SetNoDraw(true)
 			
-			timer.Create("amboat_spin_stop_"..randomNum , delay*repetitions, 1, function()
-				self:Remove()
-				--warning from console : Changing collision rules within a callback is likely to cause crashes!
-			end)
-			
+			timer.Simple(delay*repetitions, 1, function() self:Remove() end)
+			--warning from console : Changing collision rules within a callback is likely to cause crashes!
 		end
 	end
 	

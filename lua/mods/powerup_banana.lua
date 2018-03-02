@@ -5,7 +5,6 @@ mod.FullName	= "Banana"
 mod.Type		= "powerup"
 mod.BaseAmount	= 1
 mod.Delay 		= 1
-
 mod.Model		= "models/pickups/pickup_powerup_regen.mdl"
 mod.ModelScale	= 1.6
 mod.ModelOffset	= -Vector(0,0,36*mod.ModelScale)
@@ -13,9 +12,6 @@ mod.ModelOffset	= -Vector(0,0,36*mod.ModelScale)
 function mod:Mount(amBoat)
 	self.Amount = self.BaseAmount
 	self:SendInfoToClent(amBoat, {Amount = self.Amount})
-end
-
-function mod:Unmount(amBoat)
 end
 
 function mod.Draw(info, w, y, amBoat, amPlayer)
