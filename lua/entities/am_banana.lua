@@ -52,7 +52,7 @@ if SERVER then
 	function ENT:Spin(amBoat)
 		local physObj = amBoat:GetPhysicsObject()
         local left = amBoat:GetRight()*-1
-        local yaw = amBoat:GetForward()*10000000
+        local yaw = amBoat:GetForward()*8000000
  
         physObj:ApplyForceOffset(left, yaw)
         physObj:ApplyForceOffset(left*-1, yaw*-1)
@@ -91,4 +91,3 @@ else
 		self:DrawModel()
 	end
 end
-
