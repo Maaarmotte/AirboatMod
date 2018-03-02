@@ -5,7 +5,6 @@ mod.FullName	= "Pumpkin"
 mod.Type		= "powerup"
 mod.BaseAmount	= 1
 mod.Delay 		= 1
-
 mod.Model		= "models/pickups/pickup_powerup_knockout.mdl"
 mod.ModelScale	= 1.6
 mod.ModelOffset	= -Vector(0,0,36*mod.ModelScale)
