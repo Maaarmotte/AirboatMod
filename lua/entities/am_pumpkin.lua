@@ -11,7 +11,6 @@ ENT.Instructions  	= ""
 ENT.Spawnable     	= true
 ENT.AdminSpawnable	= true
 ENT.RenderGroup   	= RENDERGROUP_TRANSLUCENT
---TODO spawnicon banana
 
 if SERVER then
 	function ENT:Initialize()
@@ -22,16 +21,19 @@ if SERVER then
 		self:SetNoDraw(false)
 		self:SetRenderMode(RENDERGROUP_TRANSLUCENT)
 		
-		self:SetPos(self:LocalToWorld(Vector(0,0,20)))
+		self:SetPos(self:LocalToWorld(Vector(0,0,10)))
 
 		local phys = self:GetPhysicsObject()
 		phys:SetBuoyancyRatio(0.05)
+		phys:SetMass(1000)
 
 		if (phys:IsValid()) then
 			phys:Wake()
 		end
 		
 		sound.Play(Sound("garrysmod/balloon_pop_cute.wav"), self:GetPos(), 75)
+		
+		timer.Simple(4, function() if self:IsValid() then self:Remove() end end)
 	end
 	
 	function ENT:Backflip(amBoat)
@@ -59,7 +61,7 @@ if SERVER then
 			self:SetNotSolid(true)
 			self:SetNoDraw(true)
 			
-			timer.Create("amboat_backflip_stop_"..randomNum , delay*repetitions, 1, function()
+			timer.Simple(delay*repetitions, 1, function()
 				self:Remove()
 				--warning from console : Changing collision rules within a callback is likely to cause crashes!
 			end)
