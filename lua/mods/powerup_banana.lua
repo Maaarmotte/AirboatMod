@@ -14,6 +14,9 @@ function mod:Mount(amBoat)
 	self:SendInfoToClent(amBoat, {Amount = self.Amount})
 end
 
+function mod:Unmount(amBoat)
+end
+
 function mod.Draw(info, w, y, amBoat, amPlayer)
 	local bw = (w - 20 - 10)/mod.BaseAmount
 
@@ -42,14 +45,14 @@ end
 function mod:Run(amPly, amBoat)	
 	local ent = amBoat:GetEntity()
 	local banana = ents.Create("am_banana")
+
+	self:SendInfoToClent(amBoat, {Amount = self.Amount-1})
 	
-	banana:SetPos(ent:GetPos() - ent:GetForward()*100)
+	banana:SetPos(ent:GetPos() - ent:GetForward()*130)
 	banana:SetAngles(amBoat:GetEntity():GetAngles())
 
-	self:SendInfoToClent(amBoat, {Amount = self.Amount})
 	banana:Spawn()
 	ent:EmitSound("misc/halloween/spelltick_01.wav")
-	
 	amBoat:UnmountPowerUp()
 end
 

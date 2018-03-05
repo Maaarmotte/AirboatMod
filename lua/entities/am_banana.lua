@@ -72,7 +72,7 @@ if SERVER then
 			self:SetNotSolid(true)
 			self.effect:SetNoDraw(true)
 			
-			timer.Simple(delay*repetitions, 1, function() self:Remove() end)
+			timer.Simple(delay*repetitions+1, function() self:Remove() end)
 			--warning from console : Changing collision rules within a callback is likely to cause crashes!
 		end
 	end
