@@ -19,7 +19,6 @@ if SERVER then
 		self:SetSolid( SOLID_VPHYSICS )
 		self:SetNoDraw(false)
 		self:SetRenderMode(RENDERGROUP_TRANSLUCENT)
-		
 		self:SetPos(self:LocalToWorld(Vector(0,0,10)))
 
 		local phys = self:GetPhysicsObject()
@@ -31,7 +30,6 @@ if SERVER then
 		end
 		
 		sound.Play(Sound("garrysmod/balloon_pop_cute.wav"), self:GetPos(), 75)
-		
 		timer.Simple(4, function() if self:IsValid() then self:Remove() end end)
 	end
 	
@@ -59,11 +57,10 @@ if SERVER then
 			self:SetNotSolid(true)
 			self:SetNoDraw(true)
 			
-			timer.Simple(delay*repetitions, 1, function() self:Remove() end)
+			timer.Simple(delay*repetitions+1, function() self:Remove() end)
 			--warning from console : Changing collision rules within a callback is likely to cause crashes!
 		end
 	end
-	
 else
 	function ENT:Draw()
 		self:DrawModel()

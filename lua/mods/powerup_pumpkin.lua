@@ -46,12 +46,13 @@ function mod:Run(amPly, amBoat)
 	local ent = amBoat:GetEntity()
 	local pumpkin = ents.Create("am_pumpkin")
 	
+	self:SendInfoToClent(amBoat, {Amount = self.Amount-1})
+	
 	pumpkin:SetPos(ent:GetPos() + ent:GetForward()*100)
 	pumpkin:SetAngles(amBoat:GetEntity():GetAngles())
-
-	self:SendInfoToClent(amBoat, {Amount = self.Amount})
+	
 	pumpkin:Spawn()
-	pumpkin:GetPhysicsObject():SetVelocity(ent:GetVelocity() + ent:GetForward()*100000)
+	pumpkin:GetPhysicsObject():SetVelocity(ent:GetVelocity() + ent:GetForward()*2000)
 	ent:EmitSound("misc/halloween/spelltick_01.wav")
 	
 	amBoat:UnmountPowerUp()
