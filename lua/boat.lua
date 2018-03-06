@@ -1,3 +1,4 @@
+-- /!\ This class is too big and should be split
 util.AddNetworkString("am_boat_update")
 
 AMBoat = {}
@@ -300,8 +301,10 @@ end
 
 -- Hooks
 function AMBoat:OnDeath(attacker)
+	local ply = self.AMPlayer:GetEntity()
+
 	-- Kill the player
-	self.AMPlayer:GetEntity():Kill()
+	ply:Kill()
 
 	-- Play effects and sounds
 	local other = attacker.AMBoat
@@ -322,6 +325,22 @@ function AMBoat:OnDeath(attacker)
 			self.AMPlayer:Respawn()
 		end
 	end)
+
+	-- Update score
+	if IsValid(ply) then
+		AMDatabase.IncPlayerScore(ply, "deaths")
+
+		if attacker.AMBoat then
+			local otherPly = attacker.AMBoat:GetPlayer():GetEntity()
+
+			AMDatabase.IncPlayerScore(otherPly, "kills")
+			LogBox:Broadcast(team.GetColor(otherPly:Team()), otherPly:Name() .. " (" .. AMDatabase.GetPlayerScore(otherPly, "kills") .. ")", 
+				Color(255, 255, 255), " completely destroyed ", team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")")	
+		else
+			LogBox:Broadcast(team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")", 
+				Color(255, 255, 255), " crushed himself into a wall !")
+		end	
+	end
 
 	-- timer.Simple(2.75, function()
 	-- 	local ply = self.AMPlayer:GetEntity()

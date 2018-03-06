@@ -35,7 +35,7 @@ end
 
 -- tpe can only be "kills" or "deaths"
 function AMDatabase.GetPlayerScore(ply, tpe)
-	if not AMDatabase.CheckPlayer(ply) then return end
+	if not AMDatabase.CheckPlayer(ply) or (tpe != "kills" and tpe != "deaths") then return end
 	
 	if AMDatabase.Cache[ply][tpe] then
 		return AMDatabase.Cache[ply][tpe]
@@ -48,7 +48,7 @@ end
 
 -- tpe can only be "kills" or "deaths"
 function AMDatabase.IncPlayerScore(ply, tpe)
-	if not AMDatabase.CheckPlayer(ply) then return end
+	if not AMDatabase.CheckPlayer(ply) or (tpe != "kills" and tpe != "deaths") then return end
 	
 	local score = (AMDatabase.Cache[ply][tpe] or 0) + 1
 	sql.Query("UPDATE AMMod_scores SET " .. tpe .. "=" .. score .. " WHERE steamid='" .. ply:SteamID() .. "';")
