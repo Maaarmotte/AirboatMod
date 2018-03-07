@@ -214,6 +214,7 @@ else
 		function play_but:DoClick()
 			AMMenu.MainFrame:Close()
 
+			AMMenu.Settings.Playing = true
 			net.Start("am_start_playing")
 				net.WriteTable(AMMenu.Settings)
 			net.SendToServer()

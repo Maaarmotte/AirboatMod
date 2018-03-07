@@ -22,7 +22,7 @@ end
 
 -- Static methods
 function AMPlayer.GetPlayer(ply)
-	if ply and ply:IsValid() then
+	if IsValid(ply) then
 		if not ply.AMPlayer then
 			ply.AMPlayer = AMPlayer.New(ply)
 		end
@@ -85,7 +85,7 @@ function AMPlayer:Spawn()
 
 	local amBoat = self:GetAirboat() or AMBoat.New()
 
-	if not amBoat or not amBoat:GetEntity() or not amBoat:GetEntity():IsValid() then
+	if not amBoat:GetEntity() or not amBoat:GetEntity():IsValid() then
 		self:SetAirboat(amBoat)
 		amBoat:SetPlayer(self)
 		amBoat:Initialize()

@@ -37,6 +37,11 @@ function AMPlayer:SetAirboat(amBoat)
 	self.AMBoat = amBoat
 end
 
-function AMPlayer:IsPlaying()
+function AMPlayer:GetPlaying()
 	return self.Playing
 end
+
+function AMPlayer:SetPlaying(value)
+	self.Playing = value
+end
+

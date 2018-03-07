@@ -66,9 +66,11 @@ function AMBoat:SetPowerUp(name)
 end
 
 -- Hooks
-net.Receive("am_boat_update", function(len)
-	local data = net.ReadTable()
-	local amBoat = AMBoat.GetBoat(data.Entity)
+-- Ugly buffer... networking should be redone
+local dataCache = {}
+
+local function load(data)
+	local amBoat = AMBoat.GetBoat(ents.GetByIndex(data.EntityId))
 	local amPlayer = AMPlayer.GetPlayer(data.Player)
 
 	if amBoat and amPlayer then
@@ -83,14 +85,35 @@ net.Receive("am_boat_update", function(len)
 	end
 
 	if amPlayer then
-		amPlayer.Playing = data.Playing
+		amPlayer:SetPlaying(data.Playing)
 
 		if amPlayer:GetEntity() == LocalPlayer() then
-			if amPlayer:IsPlaying() then
+			if amPlayer:GetPlaying() then
 				AMHud.Build()
 			else
 				AMHud.Remove()
 			end
 		end
 	end
+end
+
+net.Receive("am_boat_update", function(len)
+	local data = net.ReadTable()
+	if IsValid(ents.GetByIndex(data.EntityId)) then
+		load(data)
+	else
+		table.insert(dataCache, data)
+	end
+end)
+
+timer.Create("AMBoatDataCache", 0.5, 0, function()
+	local newDataCache = {}
+	for _,v in ipairs(dataCache) do
+		if IsValid(ents.GetByIndex(v.EntityId)) then
+			load(v)
+		else
+			table.insert(newDataCache, v)
+		end
+	end
+	dataCache = newDataCache
 end)

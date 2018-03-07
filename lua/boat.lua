@@ -153,7 +153,6 @@ function AMBoat:Spawn()
 
 	self:MountMods()
 
-
 	self:Synchronize()
 
 	if not AMMain.Spawns[game.GetMap()] then return end
@@ -278,11 +277,11 @@ function AMBoat:Synchronize()
 
 		net.Start("am_boat_update")
 			net.WriteTable({
-				Entity	= self.Entity,
-				Health	= self.Health,
-				Player	= self.AMPlayer:GetEntity(),
-				Playing	= self:IsPlaying(),
-				Mods	= mods
+				EntityId = self.Entity:EntIndex(),
+				Health	 = self.Health,
+				Player	 = self.AMPlayer:GetEntity(),
+				Playing	 = self:IsPlaying(),
+				Mods	 = mods
 			})
 		net.Send(self.AMPlayer:GetEntity())
 	end
@@ -396,7 +395,7 @@ function AMBoat.CollisionCallback(boat, data)
 				self:Damage(5, otherEntity)
 				other:Damage(1, boat)
 
-				-- Add a small invulnerability time if hit
+				-- Add a small invulnerability time if hitam_boat_update
 				self.LastBump = CurTime()
 				other.LastBump = CurTime()
 

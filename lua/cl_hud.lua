@@ -46,7 +46,6 @@ local mod_order = {"space", "shift", "mouse1", "powerup"}
 function AMHud.Build()
 	if AMHud.Frame then return end
 
-
 	AMHud.DynamicSizeY = AMHud.SizeY
 
 	AMHud.Frame = vgui.Create("DPanel")
@@ -146,7 +145,7 @@ local bock = {
 hook.Add("HUDShouldDraw", "am_disable_papate_hud", function(name)
 	local amPlayer = AMPlayer.GetPlayer(LocalPlayer())
 
-	if amPlayer and amPlayer:IsPlaying() then
+	if amPlayer and amPlayer:GetPlaying() then
 		return not bock[name]
 	end
 end)
