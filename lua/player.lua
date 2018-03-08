@@ -32,7 +32,7 @@ end
 
 -- Getters
 function AMPlayer:GetEntity()
-	if self.Entity and self.Entity:IsValid() and self.Entity:IsPlayer() then
+	if IsValid(self.Entity) and self.Entity:IsPlayer() then
 		return self.Entity
 	end
 end
@@ -61,6 +61,10 @@ end
 
 function AMPlayer:GetPlaying()
 	return self.Playing
+end
+
+function AMPlayer:GetMods()
+	return self.Mods
 end
 
 function AMPlayer:SetSettings(settings)
@@ -128,7 +132,7 @@ function AMPlayer:Leave()
 
 		if self:GetAirboat() then
 			self.Entity:ExitVehicle()
-			self:GetAirboat().Entity:Remove()
+			self:GetAirboat():GetEntity():Remove()
 
 			self.Entity:Spawn()
 

@@ -23,9 +23,6 @@ end
 -- Static methods
 function AMBoat.GetBoat(boat)
 	if boat and boat:IsValid() then
-		if not boat.AMBoat then
-			boat.AMBoat = AMBoat.New()
-		end
 		return boat.AMBoat
 	end
 end
@@ -45,6 +42,10 @@ end
 
 function AMBoat:GetPowerUp()
 	return self.AMPowerUp
+end
+
+function AMBoat:GetMods()
+	return self.Mods
 end
 
 function AMBoat:GetSmokeEntity()
@@ -141,7 +142,7 @@ function AMBoat:Spawn()
 	self:SetHealth(15)
 	self:UnmountMods()
 
-	for key, modid in pairs(amPly.Mods) do
+	for key, modid in pairs(amPly:GetMods()) do
 		if modid ~= "" then
 			self:SetMod(modid)
 		else
@@ -230,10 +231,11 @@ function AMBoat:Damage(amount, attacker)
 		end
 	end
 
-	if attacker.AMBoat then
-		for _, mod in pairs(attacker.AMBoat.Mods) do
+	amBoat = AMBoat.GetBoat(attacker)
+	if amBoat then
+		for _, mod in pairs(amBoat:GetMods()) do
 			if isfunction(mod.OnAttack) then
-				amount = mod:OnAttack(attacker.AMBoat, self, amount) or amount
+				amount = mod:OnAttack(amBoat, self, amount) or amount
 			end
 		end
 	end
@@ -306,7 +308,7 @@ function AMBoat:OnDeath(attacker)
 	ply:Kill()
 
 	-- Play effects and sounds
-	local other = attacker.AMBoat
+	local other = AMBoat.GetBoat(attacker)
 
 	self:ExplodeEffect()
 
@@ -329,8 +331,8 @@ function AMBoat:OnDeath(attacker)
 	if IsValid(ply) then
 		AMDatabase.IncPlayerScore(ply, "deaths")
 
-		if attacker.AMBoat then
-			local otherPly = attacker.AMBoat:GetPlayer():GetEntity()
+		if other then
+			local otherPly = other:GetPlayer():GetEntity()
 
 			AMDatabase.IncPlayerScore(otherPly, "kills")
 			LogBox:Broadcast(team.GetColor(otherPly:Team()), otherPly:Name() .. " (" .. AMDatabase.GetPlayerScore(otherPly, "kills") .. ")", 
@@ -360,7 +362,7 @@ end
 -- Callbacks
 function AMBoat.CollisionCallback(boat, data)
 	-- Be sure that this boat is valid and currently playing
-	local self = boat.AMBoat
+	local self = AMBoat.GetBoat(boat)
 	if not self or not boat:IsValid() or not self:IsPlaying() then return end
 
 	-- Don't take too much collisions at the same time
@@ -368,7 +370,7 @@ function AMBoat.CollisionCallback(boat, data)
 
 	-- Retrieve the entity hit and try to retrieve its boat structure
 	local otherEntity = data.HitEntity
-	local other = otherEntity.AMBoat
+	local other = AMBoat.GetBoat(otherEntity)
 
 	-- Compute the damage this boat is taking
 	local selfVel = 0

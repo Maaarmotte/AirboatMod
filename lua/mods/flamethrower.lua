@@ -110,9 +110,10 @@ function mod:Run(amPly, amBoat)
 		})
 
 		local target = tr.Entity
+		local targetAmBoat = AMBoat.GetBoat(target)
 
-		if target and target.AMBoat and target.AMBoat:GetHealth() > 0 and (amBoat:GetEntity():GetPos() - target:GetPos()):LengthSqr() < self.RangeSqr then
-			target.AMBoat:Damage(self.Damage, amBoat)
+		if target and targetAmBoat and targetAmBoat:GetHealth() > 0 and (amBoat:GetEntity():GetPos() - target:GetPos()):LengthSqr() < self.RangeSqr then
+			target.AMBoat:Damage(self.Damage, amBoat:GetEntity())
 			target:EmitSound("flamethrower_hit")
 			self.LastDamage = t
 		end

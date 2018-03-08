@@ -98,7 +98,7 @@ function AMHud.Build()
 		local totalHight = 0
 
 		for _, key in pairs(mod_order) do
-			local modinfo = amBoat.Mods[key]
+			local modinfo = amBoat:GetMods()[key]
 
 			if modinfo then
 				local mod = AMMods.Mods[modinfo.Name]

@@ -1,10 +1,13 @@
 AMBoat = {}
 AMBoat_mt = { __index = AMBoat }
 
+AMBoat.Cache = {}
+
 -- Constructor
 function AMBoat.New()
 	local self = {}
 
+	self.EntityId 	= nil
 	self.Entity		= nil
 	self.Health		= 15
 	self.Playing	= false
@@ -19,12 +22,20 @@ end
 
 -- Static methods
 function AMBoat.GetBoat(boat)
-	if boat and boat:IsValid() then
-		if not boat.AMBoat then
-			boat.AMBoat = AMBoat.New()
-		end
-		return boat.AMBoat
+	if IsValid(boat) then
+		return AMBoat.GetBoatByIndex(boat:EntIndex())
 	end
+end
+
+function AMBoat.GetBoatByIndex(boatId)
+	local boat = ents.GetByIndex(boatId)
+	if not AMBoat.Cache[boatId] then
+		amBoat = AMBoat.New()
+		amBoat:SetEntityId(boatId)
+		amBoat:SetEntity(boat)
+		AMBoat.Cache[boatId] = amBoat
+	end
+	return AMBoat.Cache[boatId]
 end
 
 -- Getters
@@ -41,11 +52,27 @@ function AMBoat:IsPlaying()
 end
 
 function AMBoat:GetEntity()
+	if not self.Entity then
+		self.Entity = ents.GetByIndex(self.EntityId)
+    
+    if IsValid(self.Entity) then
+      self.Entity.AMBoat = self
+    end
+	end
+
 	return self.Entity
+end
+
+function AMBoat:GetEntityId()
+	return self.EntityId
 end
 
 function AMBoat:GetPowerUp()
 	return self.AMPowerUp
+end
+
+function AMBoat:GetMods()
+	return self.Mods
 end
 
 -- Setters
@@ -61,16 +88,26 @@ function AMBoat:SetPlaying(bool)
 	self.Playing = bool
 end
 
+function AMBoat:SetEntity(entity)
+	self.Entity = entity
+end
+
+function AMBoat:SetEntityId(entityId)
+	self.EntityId = entityId
+end
+
 function AMBoat:SetPowerUp(name)
 	self.AMPowerUp.FullName = name
 end
 
--- Hooks
--- Ugly buffer... networking should be redone
-local dataCache = {}
+function AMBoat:SetMods(mods)
+	self.Mods = mods
+end
 
-local function load(data)
-	local amBoat = AMBoat.GetBoat(ents.GetByIndex(data.EntityId))
+-- Hooks
+net.Receive("am_boat_update", function(len)
+	local data = net.ReadTable()
+	local amBoat = AMBoat.GetBoatByIndex(data.EntityId)
 	local amPlayer = AMPlayer.GetPlayer(data.Player)
 
 	if amBoat and amPlayer then
@@ -78,8 +115,7 @@ local function load(data)
 		amBoat:SetHealth(data.Health)
 		amBoat:SetPlaying(data.Playing)
 		amBoat:SetPowerUp(data.PowerUp)
-
-		amBoat.Mods = data.Mods
+		amBoat:SetMods(data.Mods)
 
 		amPlayer:SetAirboat(amBoat)
 	end
@@ -95,25 +131,4 @@ local function load(data)
 			end
 		end
 	end
-end
-
-net.Receive("am_boat_update", function(len)
-	local data = net.ReadTable()
-	if IsValid(ents.GetByIndex(data.EntityId)) then
-		load(data)
-	else
-		table.insert(dataCache, data)
-	end
-end)
-
-timer.Create("AMBoatDataCache", 0.5, 0, function()
-	local newDataCache = {}
-	for _,v in ipairs(dataCache) do
-		if IsValid(ents.GetByIndex(v.EntityId)) then
-			load(v)
-		else
-			table.insert(newDataCache, v)
-		end
-	end
-	dataCache = newDataCache
 end)
