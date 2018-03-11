@@ -80,7 +80,8 @@ function AMMods.Instantiate(name)
 				end
 			end
 
-			return AMMods.Mods[name].Unmount(self, amBoat)
+			local func = AMMods.Mods[name].Unmount or mod.Unmount
+			return func(self, amBoat)
 		end
 	end
 

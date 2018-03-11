@@ -22,7 +22,7 @@ end
 
 -- Static methods
 function AMPlayer.GetPlayer(ply)
-	if ply and ply:IsValid() then
+	if IsValid(ply) then
 		if not ply.AMPlayer then
 			ply.AMPlayer = AMPlayer.New(ply)
 		end
@@ -32,7 +32,7 @@ end
 
 -- Getters
 function AMPlayer:GetEntity()
-	if self.Entity and self.Entity:IsValid() and self.Entity:IsPlayer() then
+	if IsValid(self.Entity) and self.Entity:IsPlayer() then
 		return self.Entity
 	end
 end
@@ -63,6 +63,10 @@ function AMPlayer:GetPlaying()
 	return self.Playing
 end
 
+function AMPlayer:GetMods()
+	return self.Mods
+end
+
 function AMPlayer:SetSettings(settings)
 	settings.Color.a = 255
 	self.Color = settings.Color
@@ -85,7 +89,7 @@ function AMPlayer:Spawn()
 
 	local amBoat = self:GetAirboat() or AMBoat.New()
 
-	if not amBoat or not amBoat:GetEntity() or not amBoat:GetEntity():IsValid() then
+	if not amBoat:GetEntity() or not amBoat:GetEntity():IsValid() then
 		self:SetAirboat(amBoat)
 		amBoat:SetPlayer(self)
 		amBoat:Initialize()
@@ -128,7 +132,7 @@ function AMPlayer:Leave()
 
 		if self:GetAirboat() then
 			self.Entity:ExitVehicle()
-			self:GetAirboat().Entity:Remove()
+			self:GetAirboat():GetEntity():Remove()
 
 			self.Entity:Spawn()
 
