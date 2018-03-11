@@ -140,7 +140,10 @@ local bock = {
 	PHudHealth = true,
 	PHudArmor = true,
 	CHudHealth = true,
-	CHudBattery = true
+	CHudBattery = true,
+	FancyHUDHealth = true,
+	FancyHUDArmor = true,
+	FancyHUDAmmo = true
 }
 hook.Add("HUDShouldDraw", "am_disable_papate_hud", function(name)
 	local amPlayer = AMPlayer.GetPlayer(LocalPlayer())
