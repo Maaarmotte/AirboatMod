@@ -8,17 +8,29 @@ if SERVER then
 	util.AddNetworkString("am_start_playing")
 	util.AddNetworkString("am_stop_playing")
 
-	function AMMenu.SendMenu(amPlayer)
-		if amPlayer then
+	function AMMenu.SendMenu(amPly)
+		if amPly then
 			net.Start("am_show_menu")
-				local active = {}
-				for key, modid in pairs(amPlayer.Mods) do
-					active[key] = modid
+				local mods = {}
+				for key, modid in pairs(amPly.Mods) do
+					mods[key] = modid
 				end
-				net.WriteTable(active)
-				net.WriteTable(amPlayer.OwnedMods)
-				net.WriteTable(amPlayer.Color)
-			net.Send(amPlayer:GetEntity())
+
+				local settings = {
+					Mods = mods,
+					OwnedMods = amPly.OwnedMods,
+					Color = amPly.Color,
+				}
+
+				if AMMain.IsPlayerAdmin(amPly:GetEntity()) then
+					settings.IsAdmin = true
+					settings.AdminInfo = {
+						Spawns = AMMain.Spawns[game.GetMap()]
+					}
+				end
+
+				net.WriteTable(settings)
+			net.Send(amPly:GetEntity())
 		end
 	end
 
@@ -116,9 +128,8 @@ else
 		surface.DrawRect(5, h-1, w - 10, 1)
 	end
 
-	function AMMenu.Display(active, mods, color)
-		AMMenu.Settings.Mods = active
-		AMMenu.Settings.Color = color
+	function AMMenu.Display(settings)
+		AMMenu.Settings = settings
 
 		AMMenu.MainFrame = vgui.Create("DFrame")
 		AMMenu.MainFrame:SetSize(AMMenu.SX, AMMenu.SY)
@@ -252,7 +263,7 @@ else
 
 			local but = vgui.Create("DButton", header_menu)
 			but:Dock(LEFT)
-			but:DockMargin(5, 5, 0, 0)
+			but:DockMargin(5, 5, 0, 2)
 			but:SetText(name)
 			but:SetWide(100)
 			but:SetFont("AM_Title")
@@ -299,7 +310,7 @@ else
 			modelFrame:SetModel("models/airboat.mdl")
 			modelFrame:SetCamPos(Vector(-185, -185, 85))
 			modelFrame:SetFOV(50)
-			modelFrame:SetColor(color)
+			modelFrame:SetColor(settings.Color)
 
 			function modelFrame:DrawModel()
 				self.Entity:DrawModel()
@@ -402,7 +413,7 @@ else
 				local key = string.lower(nicekey)
 
 				local button = vgui.Create("DButton", optionList)
-				if active[key] and AMMods.Mods[active[key]] then button:SetText("[" .. nicekey .. "]: " .. AMMods.Mods[active[key]].FullName)
+				if settings.Mods[key] and AMMods.Mods[settings.Mods[key]] then button:SetText("[" .. nicekey .. "]: " .. AMMods.Mods[settings.Mods[key]].FullName)
 				else button:SetText("[" .. nicekey .. "]: None") end
 
 				button:Dock(TOP)
@@ -412,10 +423,10 @@ else
 				button:SetTall(60)
 				button.DoClick = function()
 					selectList:Open(key, button, function()
-						for _, mod in ipairs(mods) do
+						for _, mod in ipairs(settings.OwnedMods) do
 							if AMMods.Mods[mod].Type == key then
 								selectList:AddBut(AMMods.Mods[mod].FullName, nil, function()
-									active[key] = mod
+									settings.Mods[key] = mod
 									AMMenu.UpdateModel()
 									button:SetText("[" .. nicekey .. "]: " .. AMMods.Mods[mod].FullName)
 								end)
@@ -423,7 +434,7 @@ else
 						end
 
 						selectList:AddBut("None", nil, function()
-							active[key] = ""
+							settings.Mods[key] = ""
 							AMMenu.UpdateModel()
 							button:SetText("[" .. nicekey .. "]: None")
 						end)
@@ -469,7 +480,7 @@ else
 							modelFrame:SetColor(c)
 							selectList:Close()
 
-							AMMenu.Settings.Color = c
+							settings.Color = c
 						end
 					end
 				end)
@@ -485,6 +496,84 @@ else
 				surface.DrawRect(5, 0, w - 10, h)
 			end
 		end)
+
+		if settings.IsAdmin then
+			createmenu("Admin", function(pnl)
+				function pnl:Paint(w, h)
+					surface.SetDrawColor(Color(38, 45, 59, 255))
+					surface.DrawRect(0, 0, w, h)
+				end
+
+
+				local optionList = vgui.Create("DPanel", pnl)
+				optionList:Dock(LEFT)
+				optionList:DockMargin(5, 0, 0, 0)
+				optionList:SetWide(175)
+				function optionList:Paint(w, h)
+					surface.SetDrawColor(255, 255, 255, 255)
+					surface.DrawRect(0, 0, w, h)
+				end
+
+				optionList.PanelList = {}
+				optionList.LastPanel = nil
+
+				function optionList:addOption(name, build)
+					local button = vgui.Create("DButton", self)
+					button:Dock(TOP)
+					button.Paint = paint_button_border
+					button:SetFont("AM_Text")
+					button:DockMargin(0, 0, 0, 0)
+					button:SetTall(35)
+					button:SetText(name)
+
+					local panel = vgui.Create("DPanel", pnl)
+					panel:Dock(FILL)
+					panel:DockMargin(5, 0, 5, 0)
+					panel:SetVisible(false)
+
+					panel.Button = button
+
+					local id = table.insert(optionList.PanelList, panel)
+
+					function button.DoClick()
+						self:showMenu(id)
+					end
+
+					function panel:Paint(w, h)
+						surface.SetDrawColor(255, 255, 255, 255)
+						surface.DrawRect(0, 0, w, h)
+					end
+
+					build(panel, button)
+				end
+
+				function optionList:showMenu(id)
+					if optionList.LastPanel then
+						optionList.LastPanel:SetVisible(false)
+						optionList.LastPanel.Button.Selected = false
+					end
+
+					local panel = optionList.PanelList[id]
+
+					panel:SetVisible(true)
+					panel.Button.Selected = true
+
+					optionList.LastPanel = panel
+				end
+
+
+				optionList:addOption("Spawn Zones", function(pnl)
+					local title = vgui.Create("DLabel", pnl)
+				end)
+
+
+				optionList:addOption("Settings", function(pnl)
+
+				end)
+
+				optionList:showMenu(1)
+			end)
+		end
 
 		showmenu(1)
 	end
@@ -541,6 +630,6 @@ else
 	end
 
 	net.Receive("am_show_menu", function(len)
-		AMMenu.Display(net.ReadTable(), net.ReadTable(), net.ReadTable())
+		AMMenu.Display(net.ReadTable())
 	end)
 end
