@@ -131,10 +131,38 @@ function AMBoat:Initialize()
 	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, self.Entity, 0)
 end
 
+function AMBoat:FindSpawn(attempt)
+	if #AMSpawns == 0 or attempt == 100 then return end
+
+	local spawn = AMSpawns[math.random(1, #AMSpawns)]
+
+	-- Move the boat to a random spot in the area
+	local rand = VectorRand()
+	rand.x = math.abs(rand.x)
+	rand.y = math.abs(rand.y)
+	local pos = spawn.min + rand*(spawn.max - spawn.min)
+
+	local tr = util.TraceHull({
+		start = Vector(pos.x, pos.y, spawn.max.z),
+		endpos = Vector(pos.x, pos.y, spawn.min.z),
+		mins = Vector(-100, -100, 0),
+		maxs = Vector(100, 100, 150),
+		mask = MASK_ALL
+	})
+
+	if tr.HitPos:Distance(tr.StartPos) == 0 then
+		local attempt = (attempt or 0) + 1
+		return self:FindSpawn(attempt)
+	end
+
+	return tr.HitPos
+end
+
 function AMBoat:Spawn()
 	local amPly = self.AMPlayer
 	local ply = amPly.Entity
 	local boat = self:GetEntity()
+	local phys = boat:GetPhysicsObject()
 
 	self.Entity:SetColor(amPly.Color)
 
@@ -151,23 +179,17 @@ function AMBoat:Spawn()
 	end
 
 	self:UnsetKey("powerup")
-
 	self:MountMods()
-
 	self:Synchronize()
 
-	if not AMMain.Spawns[game.GetMap()] then return end
+	boat:SetAngles(Angle(0, boat:GetAngles().yaw, 0))
+	phys:SetVelocity(Vector(0, 0, 100))
+	phys:AddAngleVelocity(-phys:GetAngleVelocity())
+	local pos = self:FindSpawn()
 
-	-- Move the boat to a random spot in the area
-	local rand = VectorRand()
-	rand.x = math.abs(rand.x)
-	rand.y = math.abs(rand.y)
-	rand.z = math.abs(rand.z)
-	local areaV1 = AMMain.Spawns[game.GetMap()][1]
-	local areaV2 = AMMain.Spawns[game.GetMap()][2]
-	local pos = areaV1 + rand*(areaV2 - areaV1)
-	pos.z = (areaV1.z + areaV2.z)/2
-	boat:SetPos(pos)
+	if pos then
+		boat:SetPos(pos)
+	end
 end
 
 function AMBoat:SetMod(modid)
@@ -335,12 +357,12 @@ function AMBoat:OnDeath(attacker)
 			local otherPly = other:GetPlayer():GetEntity()
 
 			AMDatabase.IncPlayerScore(otherPly, "kills")
-			LogBox:Broadcast(team.GetColor(otherPly:Team()), otherPly:Name() .. " (" .. AMDatabase.GetPlayerScore(otherPly, "kills") .. ")", 
-				Color(255, 255, 255), " completely destroyed ", team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")")	
+			LogBox:Broadcast(team.GetColor(otherPly:Team()), otherPly:Name() .. " (" .. AMDatabase.GetPlayerScore(otherPly, "kills") .. ")",
+				Color(255, 255, 255), " completely destroyed ", team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")")
 		else
-			LogBox:Broadcast(team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")", 
+			LogBox:Broadcast(team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")",
 				Color(255, 255, 255), " crushed himself into a wall !")
-		end	
+		end
 	end
 
 	-- timer.Simple(2.75, function()

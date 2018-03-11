@@ -1,8 +1,4 @@
 
-AMMain.Spawns["gm_construct_flatgrass_v6-2"] = { Vector(12607.637695, -7303.835938, -507.583374), Vector(7220.501465, -3177.291260, -168.961502) }
-AMMain.Spawns["gm_excess_waters"] = { Vector(-1042, -10021, 654), Vector(-2733, -8171, 454) }
-AMMain.Spawns["gm_excess_construct_13"] = { Vector(2038, -10431, -34), Vector(5736, -12471, 166)}
-
 function AMMain.NewPlayer(ply)
 	local amPly = ply.AMPlayer or AMPlayer.New(ply)
 	-- local amBoat = amPly.AMBoat or AMBoat.New()
@@ -27,3 +23,42 @@ end
 function AMMain.IsPlayerAdmin(ply)
 	return ply and ply:IsAdmin()
 end
+
+AMSpawn = {}
+AMSpawns = {}
+
+function AMSpawn.Update()
+	AMSpawns = AMDatabase.GetSpawns(game.GetMap())
+end
+
+function AMSpawn.GetByID(id)
+	print("ixi", id)
+	for _, spawn in pairs(AMSpawns) do
+		print(type(spawn.id), type(id))
+		if spawn.id == id then
+			print("coouou")
+			return spawn
+		end
+	end
+end
+
+function AMSpawn.New(min, max)
+	AMDatabase.NewSpawn(game.GetMap(), min, max)
+	AMSpawn.Update()
+
+	return AMSpawns[#AMSpawns]
+end
+
+function AMSpawn.Edit(id, min, max)
+	AMDatabase.EditSpawn(id, min, max)
+	AMSpawn.Update()
+
+	return AMSpawn.GetByID(id)
+end
+
+function AMSpawn.Remove(id)
+	AMDatabase.RemoveSpawn(id)
+	AMSpawn.Update()
+end
+
+AMSpawn.Update()
