@@ -6,12 +6,25 @@ MENU.Title = "Mods"
 MENU.Position = 1
 
 if SERVER then
+	function MENU:GetSettings(ply, info)
+		local amPly = AMPlayer.GetPlayer(ply)
 
+		local mods = {}
+		for key, modid in pairs(amPly.Mods) do
+			mods[key] = modid
+		end
+
+		info.Mods = mods
+		info.OwnedMods = amPly.OwnedMods
+		info.Color = amPly.Color
+	end
 else
 	MENU.Props = {}
 	MENU.Entity = NULL
 
 	function MENU:Build(pnl)
+		local settings = AMMenu.Settings
+
 		function pnl:Paint(w, h)
 			surface.SetDrawColor(Color(38, 45, 59, 255))
 			surface.DrawRect(0, 0, 5, h)
@@ -36,7 +49,7 @@ else
 		function modelFrame:DrawModel()
 			self.Entity:DrawModel()
 
-			for _, prop in pairs(AMMenu.Props) do
+			for _, prop in pairs(MENU.Props) do
 				if IsValid(prop) then
 					local c = prop:GetColor()
 					render.SetColorModulation(c.r/255, c.g/255, c.b/255)
@@ -45,8 +58,8 @@ else
 			end
 		end
 
-		AMMenu.Entity = modelFrame:GetEntity()
-		AMMenu.Entity:SetSubMaterial(0, "models/airboat-mod/airboat001")
+		MENU.Entity = modelFrame:GetEntity()
+		MENU.Entity:SetSubMaterial(0, "models/airboat-mod/airboat001")
 
 		timer.Simple(0.01, function()
 			MENU:UpdateModel()
@@ -59,7 +72,7 @@ else
 		selectList.IsOpened = name
 
 		function selectList:Paint(w, h)
-			DrawBlur(self, 2, 2)
+			AMMenu.DrawBlur(self, 2, 2)
 
 			surface.SetDrawColor(0, 0, 0, 100)
 			surface.DrawRect(0, 0, w, h)
@@ -138,7 +151,7 @@ else
 			else button:SetText("[" .. nicekey .. "]: None") end
 
 			button:Dock(TOP)
-			button.Paint = paint_button_border
+			button.Paint = AMMenu.StyleButtonBorder
 			button:SetFont("AM_Text")
 			button:DockMargin(0, 0, 0, 0)
 			button:SetTall(60)
@@ -179,7 +192,7 @@ else
 		local button = vgui.Create("DButton", optionList)
 		button:SetText("Color")
 		button:Dock(TOP)
-		button.Paint = paint_button_border
+		button.Paint = AMMenu.StyleButtonBorder
 		button:SetFont("AM_Text")
 		button:DockMargin(0, 0, 0, 0)
 		button:SetTall(60)
@@ -219,25 +232,25 @@ else
 	}
 
 
-	function MENU:UpdateModel()
-		if not IsValid(self.Entity) then return end
+	function MENU.UpdateModel()
+		if not IsValid(MENU.Entity) then return end
 
-		for _, prop in pairs(self.Props) do
+		for _, prop in pairs(MENU.Props) do
 			if IsValid(prop) then
 				prop:Remove()
 			end
 		end
 
-		for key, id in pairs(self.Settings.Mods) do
+		for key, id in pairs(AMMenu.Settings.Mods) do
 			local mod = AMMods.Mods[id]
 
 			if mod then
-				mod.Mount(setmetatable({Name = id}, mod_mt), self.Entity)
+				mod.Mount(setmetatable({Name = id}, mod_mt), MENU.Entity)
 			end
 		end
 	end
 
-	function MENU:MountHolo(airboat, model, pos, ang, scale, material, color)
+	function MENU.MountHolo(airboat, model, pos, ang, scale, material, color)
 		if not color then color = Color(255, 255, 255, 255) end
 
 		if IsValid(airboat) then
@@ -251,7 +264,7 @@ else
 		    ent:SetParent(airboat)
 			ent:SetNoDraw(true)
 
-			table.insert(self.Props, ent)
+			table.insert(MENU.Props, ent)
 
 			return ent
 		end

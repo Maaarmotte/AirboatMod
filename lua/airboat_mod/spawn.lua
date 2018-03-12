@@ -6,11 +6,8 @@ function AMSpawn.Update()
 end
 
 function AMSpawn.GetByID(id)
-	print("ixi", id)
 	for _, spawn in pairs(AMSpawns) do
-		print(type(spawn.id), type(id))
 		if spawn.id == id then
-			print("coouou")
 			return spawn
 		end
 	end
@@ -25,6 +22,13 @@ end
 
 function AMSpawn.Edit(id, min, max)
 	AMDatabase.EditSpawn(id, min, max)
+	AMSpawn.Update()
+
+	return AMSpawn.GetByID(id)
+end
+
+function AMSpawn.Enable(id, enable)
+	AMDatabase.EnableSpawn(id, enable)
 	AMSpawn.Update()
 
 	return AMSpawn.GetByID(id)

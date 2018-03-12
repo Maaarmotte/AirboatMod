@@ -134,7 +134,17 @@ end
 function AMBoat:FindSpawn(attempt)
 	if #AMSpawns == 0 or attempt == 100 then return end
 
-	local spawn = AMSpawns[math.random(1, #AMSpawns)]
+	local validspawn = {}
+
+	for _, spawn in pairs(AMSpawns) do
+		if spawn.enabled and spawn.min ~= Vector(0,0,0) and spawn.max ~= Vector(0,0,0) then
+			table.insert(validspawn, spawn)
+		end
+	end
+
+	if #validspawn == 0 then return end
+
+	local spawn = validspawn[math.random(1, #validspawn)]
 
 	-- Move the boat to a random spot in the area
 	local rand = VectorRand()

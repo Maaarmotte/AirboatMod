@@ -1,8 +1,12 @@
 local MENU = {}
+
+MENU.Name = "admin"
 MENU.Title = "Admin"
 MENU.Position = 100
 
 if SERVER then
+	MENU.Receive = {}
+
 	function MENU:GetSettings(ply, info)
 		info.IsAdmin = AMMain.IsPlayerAdmin(ply)
 
@@ -12,12 +16,84 @@ if SERVER then
 			}
 		end
 	end
+
+	function MENU.Receive:EditSpawn(ply, id, v1, v2, callback)
+		if not AMMain.IsPlayerAdmin(ply) then
+			AMMenu.SendSpawnsInfo(ply)
+			return
+		end
+
+		v1 = Vector(math.Clamp(v1.x, -16384, 16384), math.Clamp(v1.y, -16384, 16384), math.Clamp(v1.z, -16384, 16384))
+		v2 = Vector(math.Clamp(v2.x, -16384, 16384), math.Clamp(v2.y, -16384, 16384), math.Clamp(v2.z, -16384, 16384))
+		local min = Vector(math.min(v1.x, v2.x), math.min(v1.y, v2.y), math.min(v1.z, v2.z))
+		local max = Vector(math.max(v1.x, v2.x), math.max(v1.y, v2.y), math.max(v1.z, v2.z))
+
+
+		AMSpawn.Edit(id, min, max)
+
+		callback(min, max)
+	end
+
+	function MENU.Receive:EnableSpawn(ply, id, enable, callback)
+		if not AMMain.IsPlayerAdmin(ply) then
+			AMMenu.SendSpawnsInfo(ply)
+			return
+		end
+
+		AMSpawn.Enable(id, enable)
+
+		callback(enable)
+	end
+
+	function MENU.Receive:RemoveSpawn(ply, id, callback)
+		if not AMMain.IsPlayerAdmin(ply) then
+			AMMenu.SendSpawnsInfo(ply)
+			return
+		end
+
+		AMSpawn.Remove(id)
+
+		callback()
+	end
+
+	function MENU.Receive:NewSpawn(ply, callback)
+		if not AMMain.IsPlayerAdmin(ply) then
+			AMMenu.SendSpawnsInfo(ply)
+			return
+		end
+
+		local spawn = AMSpawn.New(Vector(0,0,0), Vector(0,0,0))
+
+		callback(spawn)
+	end
+
+	function MENU.Receive:UpdateSpawn(ply, callback)
+		if not AMMain.IsPlayerAdmin(ply) then
+			AMMenu.SendSpawnsInfo(ply)
+			return
+		end
+
+		callback(AMSpawns)
+	end
+
+	function MENU.Receive:TeleportSpawn(ply, id)
+		if not AMMain.IsPlayerAdmin(ply) then
+			AMMenu.SendSpawnsInfo(ply)
+			return
+		end
+
+		local spawn = AMSpawn.GetByID(id)
+
+		ply:SetPos((spawn.min + spawn.max)/2)
+	end
 else
 	function MENU:CanSee()
 		return AMMenu.Settings.IsAdmin
 	end
 
 	function MENU:Build(pnl)
+		local settings = AMMenu.Settings
+
 		function pnl:Paint(w, h)
 			surface.SetDrawColor(Color(38, 45, 59, 255))
 			surface.DrawRect(0, 0, w, h)
@@ -39,7 +115,7 @@ else
 		function optionList:addOption(name, build)
 			local button = vgui.Create("DButton", self)
 			button:Dock(TOP)
-			button.Paint = paint_button_border
+			button.Paint = AMMenu.StyleButtonBorder
 			button:SetFont("AM_Text")
 			button:DockMargin(0, 0, 0, 0)
 			button:SetTall(35)
@@ -92,32 +168,6 @@ else
 				-- surface.DrawRect(0, 0, w, h)
 			end
 
-			local btnAdd = vgui.Create("DButton", btnsPanel)
-			btnAdd:Dock(RIGHT)
-			btnAdd:SetText("New spawn")
-			btnAdd:DockMargin(5, 0, 0 ,0)
-			btnAdd:SetWide(150)
-			btnAdd:SetFont("AM_Title")
-			btnAdd.Paint = paint_button_light
-
-			function btnAdd:DoClick()
-				net.Start("am_spawn_add")
-				net.SendToServer()
-			end
-
-			local btnRefresh = vgui.Create("DButton", btnsPanel)
-			btnRefresh:Dock(RIGHT)
-			btnRefresh:SetText("Refresh")
-			btnRefresh:DockMargin(5, 0, 0 ,0)
-			btnRefresh:SetWide(150)
-			btnRefresh:SetFont("AM_Title")
-			btnRefresh.Paint = paint_button_light
-
-			function btnRefresh:DoClick()
-				net.Start("am_spawn_update")
-				net.SendToServer()
-			end
-
 			local list = vgui.Create("DScrollPanel", pnl)
 			list:Dock(FILL)
 			list:DockMargin(5, 5, 5, 0)
@@ -128,16 +178,67 @@ else
 				surface.DrawRect(0, 0, w, h)
 			end
 
-			function list:AddSpawn(id, min, max)
+
+			local btnAdd = vgui.Create("DButton", btnsPanel)
+			btnAdd:Dock(RIGHT)
+			btnAdd:SetText("New spawn")
+			btnAdd:DockMargin(5, 0, 0 ,0)
+			btnAdd:SetWide(150)
+			btnAdd:SetFont("AM_Title")
+			btnAdd.Paint = AMMenu.StyleButtonLight
+
+			function btnAdd:DoClick()
+				MENU:Send("NewSpawn", function(spawn)
+					if istable(spawn) and spawn.id then
+						list:AddSpawn(spawn)
+					end
+				end)
+			end
+
+			local btnRefresh = vgui.Create("DButton", btnsPanel)
+			btnRefresh:Dock(RIGHT)
+			btnRefresh:SetText("Refresh")
+			btnRefresh:DockMargin(5, 0, 0 ,0)
+			btnRefresh:SetWide(150)
+			btnRefresh:SetFont("AM_Title")
+			btnRefresh.Paint = AMMenu.StyleButtonLight
+
+			function btnRefresh:DoClick()
+				MENU:Send("UpdateSpawn", function(spawns)
+					settings.AdminInfo.Spawns = spawns
+					list:Clear()
+
+					for _, spawn in pairs(spawns) do
+						list:AddSpawn(spawn)
+					end
+				end)
+			end
+
+			function list:AddSpawn(spawn)
 				local fram = list:Add("DPanel")
 				fram:Dock(TOP)
 				fram:DockMargin(3, 3, 3, 0)
 				fram:SetTall(24)
-				fram.spawnId = id
+				fram.spawnId = spawn.id
 
 				function fram:Paint(w, h)
 					surface.SetDrawColor(255, 255, 255, 255)
 					surface.DrawRect(0, 0, w, h)
+				end
+
+				local activeCheck = vgui.Create("DCheckBox", fram)
+				activeCheck:Dock(LEFT)
+				activeCheck:DockMargin(5, 4, 0, 5)
+				activeCheck:SetWide(15)
+				activeCheck:SetChecked(spawn.enabled)
+
+				function activeCheck:OnChange(val)
+					self:SetChecked(not val)
+
+					MENU:Send("EnableSpawn", fram.spawnId, val, function(enable)
+						self:SetChecked(enable)
+						spawn.enabled = enable
+					end)
 				end
 
 				local minLabel = vgui.Create("DLabel", fram)
@@ -152,21 +253,21 @@ else
 				minX:DockMargin(2, 4, 0, 4)
 				minX:SetWide(40)
 				minX:SetNumeric(true)
-				minX:SetText(min.x)
+				minX:SetText(spawn.min.x)
 
 				local minY = vgui.Create("DTextEntry", fram)
 				minY:Dock(LEFT)
 				minY:DockMargin(2, 4, 0, 4)
 				minY:SetWide(40)
 				minY:SetNumeric(true)
-				minY:SetText(min.y)
+				minY:SetText(spawn.min.y)
 
 				local minZ = vgui.Create("DTextEntry", fram)
 				minZ:Dock(LEFT)
 				minZ:DockMargin(2, 4, 0, 4)
 				minZ:SetWide(40)
 				minZ:SetNumeric(true)
-				minZ:SetText(min.z)
+				minZ:SetText(spawn.min.z)
 
 
 				local maxLabel = vgui.Create("DLabel", fram)
@@ -181,21 +282,21 @@ else
 				maxX:DockMargin(2, 4, 0, 4)
 				maxX:SetWide(40)
 				maxX:SetNumeric(true)
-				maxX:SetText(max.x)
+				maxX:SetText(spawn.max.x)
 
 				local maxY = vgui.Create("DTextEntry", fram)
 				maxY:Dock(LEFT)
 				maxY:DockMargin(2, 4, 0, 4)
 				maxY:SetWide(40)
 				maxY:SetNumeric(true)
-				maxY:SetText(max.y)
+				maxY:SetText(spawn.max.y)
 
 				local maxZ = vgui.Create("DTextEntry", fram)
 				maxZ:Dock(LEFT)
 				maxZ:DockMargin(2, 4, 0, 4)
 				maxZ:SetWide(40)
 				maxZ:SetNumeric(true)
-				maxZ:SetText(max.z)
+				maxZ:SetText(spawn.max.z)
 
 				local btnRemove = vgui.Create("DImageButton", fram)
 				btnRemove:Dock(RIGHT)
@@ -204,9 +305,9 @@ else
 				btnRemove:SetIcon("icon16/delete.png")
 
 				function btnRemove:DoClick()
-					net.Start("am_spawn_remove")
-						net.WriteInt(fram.spawnId, 16)
-					net.SendToServer()
+					MENU:Send("RemoveSpawn", fram.spawnId, function()
+						fram:Remove()
+					end)
 				end
 
 				local btnSave = vgui.Create("DImageButton", fram)
@@ -216,11 +317,12 @@ else
 				btnSave:SetIcon("icon16/disk.png")
 
 				function btnSave:DoClick()
-					net.Start("am_spawn_save")
-						net.WriteInt(fram.spawnId, 16)
-						net.WriteVector(Vector(minX:GetValue(), minY:GetValue(), minZ:GetValue()))
-						net.WriteVector(Vector(maxX:GetValue(), maxY:GetValue(), maxZ:GetValue()))
-					net.SendToServer()
+					MENU:Send("EditSpawn", fram.spawnId, Vector(minX:GetValue(), minY:GetValue(), minZ:GetValue()), Vector(maxX:GetValue(), maxY:GetValue(), maxZ:GetValue()), function(min, max)
+						minX:SetText(min.x) minY:SetText(min.y) minZ:SetText(min.z)
+						maxX:SetText(max.x) maxY:SetText(max.y) maxZ:SetText(max.z)
+						spawn.min = min
+						spawn.max = max
+					end)
 				end
 
 				local btnView = vgui.Create("DImageButton", fram)
@@ -230,10 +332,10 @@ else
 				btnView:SetIcon("icon16/magnifier.png")
 
 				function btnView:DoClick()
-					if AMMenu.DisplaySpawn == fram.spawnId then
-						AMMenu.DisplaySpawn = nil
+					if MENU.DisplaySpawn == fram.spawnId then
+						MENU.DisplaySpawn = nil
 					else
-						AMMenu.DisplaySpawn = fram.spawnId
+						MENU.DisplaySpawn = fram.spawnId
 					end
 				end
 
@@ -244,16 +346,14 @@ else
 				btnTeleport:SetIcon("icon16/lightning_go.png")
 
 				function btnTeleport:DoClick()
-					net.Start("am_spawn_teleport")
-						net.WriteInt(fram.spawnId, 16)
-					net.SendToServer()
+					MENU:Send("TeleportSpawn", fram.spawnId)
 				end
 
 				return fram
 			end
 
-			for _, info in pairs(settings.AdminInfo.Spawns) do
-				list:AddSpawn(info.id, info.min, info.max)
+			for _, spawn in pairs(settings.AdminInfo.Spawns) do
+				list:AddSpawn(spawn)
 			end
 		end)
 
@@ -264,6 +364,24 @@ else
 
 		optionList:showMenu(1)
 	end
+
+	hook.Add("PostDrawTranslucentRenderables", "AirboatMod.SpawnView", function()
+		if MENU.DisplaySpawn and AMMenu.Settings.AdminInfo then
+			for _, spawn in pairs(AMMenu.Settings.AdminInfo.Spawns) do
+				if spawn.id == MENU.DisplaySpawn then
+					local color = Color(0, 255, 0)
+
+					if not spawn.enabled then
+						color = Color(255, 0, 0)
+					end
+
+					local pos = (spawn.min + spawn.max)/2
+					render.DrawWireframeBox( pos, Angle(0, 0, 0), spawn.min - pos, spawn.max - pos, color, true )
+					break
+				end
+			end
+		end
+	end)
 end
 
 AMMenu.Register(MENU)

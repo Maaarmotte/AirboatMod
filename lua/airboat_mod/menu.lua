@@ -3,9 +3,17 @@ AMMenu.SubMenus = AMMenu.SubMenus or {}
 AMMenu.Callbacks = AMMenu.Callbacks or {}
 
 local SubMenu = {}
-local SubMenu_mt = {__index = function(tab, key) return SubMenu[key] end}
+local SubMenu_mt = {__index = function(tab, key) return
+
+	SubMenu[key]
+end}
 
 if SERVER then
+	function SubMenu:Send(ply, action, ...)
+		AMMenu.Send(ply, self.Name, action, ...)
+	end
+
+
 	AMMenu.Receive = {}
 
 	util.AddNetworkString("AirboatMod.Menu.Action")
@@ -13,14 +21,15 @@ if SERVER then
 
 	function AMMenu.Register(menu)
 		AMMenu.SubMenus[menu.Name] = setmetatable(menu, SubMenu_mt)
-		menu.Receive = {}
 	end
 
 	function AMMenu.ShowMenu(ply)
-		local settings = {asd = 123}
+		local settings = {}
 
 		for _, menu in pairs(AMMenu.SubMenus) do
-			menu:GetSettings(ply, settings)
+			if isfunction(menu.GetSettings) then
+				menu:GetSettings(ply, settings)
+			end
 		end
 
 
@@ -39,11 +48,10 @@ if SERVER then
 				Action = action,
 				Key = key,
 				Callback = table.Remove(args, #args),
+				Player = ply,
 				Time = CurTime()
 			}
 		end
-
-		PrintTable(args)
 
 		net.Start("AirboatMod.Menu.Action")
 			net.WriteString(env)
@@ -76,7 +84,44 @@ if SERVER then
 			menu.Receive[action](menu, ply, unpack(args))
 		end
 	end)
+
+	net.Receive("AirboatMod.Menu.Callback", function(_, ply)
+		local key = net.ReadString()
+		local args = net.ReadTable()
+
+		local callback = AMMenu.Callbacks[key]
+
+		if callback then
+			if callback.Player ~= ply then return end
+
+			callback.Callback(unpack(args))
+
+			AMMenu.Callbacks[key] = nil
+		end
+	end)
+
+
+	function AMMenu.Receive.Play(ply, settings)
+		local amPly = AMPlayer.GetPlayer(ply)
+		if not amPly then return end
+
+		amPly:SetSettings(settings)
+		amPly:Spawn()
+	end
+
+	function AMMenu.Receive.Leave(ply, settings)
+		local amPly = AMPlayer.GetPlayer(ply)
+		if not amPly then return end
+
+		amPly:Leave()
+	end
 else
+	function SubMenu:Send(action, ...)
+		AMMenu.Send(self.Name, action, ...)
+	end
+
+
+
 	AMMenu.SizeX = 650
 	AMMenu.SizeY = 450
 
@@ -109,6 +154,49 @@ else
 		weight = 400
 	})
 
+	local blur = Material("pp/blurscreen")
+	function AMMenu.DrawBlur(pnl, a, d)
+		local x, y = pnl:LocalToScreen(0, 0)
+		surface.SetDrawColor(255, 255, 255)
+		surface.SetMaterial(blur)
+
+		for i = 1, d do
+			blur:SetFloat("$blur", (i / d) * (a))
+			blur:Recompute()
+			render.UpdateScreenEffectTexture()
+			surface.DrawTexturedRect(-x, -y, ScrW(), ScrH())
+		end
+	end
+-- paint_button_light
+	function AMMenu.StyleButtonLight(self, w, h)
+		local color = Color(234, 234, 234, 255)
+
+		if self.Depressed or self:IsSelected() or self:GetToggle() then
+			color = Color(38, 174, 255)
+		elseif self.Hovered then
+			color = Color(245, 245, 245, 255)
+		end
+
+		surface.SetDrawColor(color)
+		surface.DrawRect(0, 0, w, h)
+	end
+-- paint_button_border
+	function AMMenu.StyleButtonBorder(self, w, h)
+		local color = Color(235, 235, 235, 255)
+
+		if self.Depressed or self:IsSelected() or self:GetToggle()  then
+			color = Color(38, 174, 255)
+		elseif self.Hovered or self.Selected then
+			color = Color(255, 255, 255, 255)
+		end
+
+		surface.SetDrawColor(color)
+		surface.DrawRect(0, 0, w, h)
+
+		surface.SetDrawColor(0, 0, 0, 50)
+		surface.DrawRect(5, h-1, w - 10, 1)
+	end
+
 	function AMMenu.Register(menu)
 		AMMenu.SubMenus[menu.Name] = setmetatable(menu, SubMenu_mt)
 	end
@@ -125,24 +213,15 @@ else
 				AMMenu.BuildSubMenu(name)
 			end
 		end
-	end
 
-	local blur = Material("pp/blurscreen")
-	function AMMenu.DrawBlur(pnl, a, d)
-		local x, y = pnl:LocalToScreen(0, 0)
-		surface.SetDrawColor(255, 255, 255)
-		surface.SetMaterial(blur)
-
-		for i = 1, d do
-			blur:SetFloat("$blur", (i / d) * (a))
-			blur:Recompute()
-			render.UpdateScreenEffectTexture()
-			surface.DrawTexturedRect(-x, -y, ScrW(), ScrH())
+		for name, menu in pairs(AMMenu.SubMenus) do
+			AMMenu.SelectedSubMenu(name)
+			break
 		end
 	end
 
 	function AMMenu.Build()
-		AMMenu.Settings = settings
+		AMMenu.CurrentSubMenu = nil
 
 		main = vgui.Create("DFrame")
 		AMMenu.MainFrame = main
@@ -201,6 +280,7 @@ else
 
 
 		local headerMenu = vgui.Create("DPanel", main)
+		AMMenu.TabList = headerMenu
 		headerMenu:Dock(TOP)
 		headerMenu:SetTall(32)
 		headerMenu.Paint = function(self, w, h)
@@ -222,12 +302,11 @@ else
 		LeaveBtn:SetText("Leave")
 		LeaveBtn:SetWide(100)
 		LeaveBtn:SetFont("AM_Title")
-		LeaveBtn.Paint = paint_button_light
+		LeaveBtn.Paint = AMMenu.StyleButtonLight
 		function LeaveBtn:DoClick()
 			main:Close()
 
-			net.Start("am_stop_playing")
-			net.SendToServer()
+			AMMenu.Send("Main", "Leave", AMMenu.Settings)
 		end
 
 		local playBtn = vgui.Create("DButton", footerMenu)
@@ -236,14 +315,12 @@ else
 		playBtn:SetText("Play")
 		playBtn:SetWide(100)
 		playBtn:SetFont("AM_Title")
-		playBtn.Paint = paint_button_light
+		playBtn.Paint = AMMenu.StyleButtonLight
 		function playBtn:DoClick()
 			main:Close()
 
 			AMMenu.Settings.Playing = true
-			net.Start("am_start_playing")
-				net.WriteTable(AMMenu.Settings)
-			net.SendToServer()
+			AMMenu.Send("Main", "Play", AMMenu.Settings)
 		end
 
 		local credit = vgui.Create("DLabel", footerMenu)
@@ -264,10 +341,10 @@ else
 		function menu.Panel:Paint()
 		end
 
-		menu.Tab = vgui.Create("DButton", header_menu)
+		menu.Tab = vgui.Create("DButton", AMMenu.TabList)
 		menu.Tab:Dock(LEFT)
 		menu.Tab:DockMargin(5, 5, 0, 2)
-		menu.Tab:SetText(name)
+		menu.Tab:SetText(menu.Title)
 		menu.Tab:SetWide(100)
 		menu.Tab:SetFont("AM_Title")
 
@@ -293,7 +370,7 @@ else
 
 	function AMMenu.SelectedSubMenu(name)
 		if AMMenu.CurrentSubMenu then
-			AMMenu.CurrentSubMenu:SetVisible(false)
+			AMMenu.CurrentSubMenu.Panel:SetVisible(false)
 			AMMenu.CurrentSubMenu.Tab.Selected = false
 		end
 
@@ -314,7 +391,7 @@ else
 				Name = env,
 				Action = action,
 				Key = key,
-				Callback = table.Remove(args, #args),
+				Callback = table.remove(args, #args),
 				Time = CurTime()
 			}
 		end
@@ -331,20 +408,18 @@ else
 	end
 
 
-	net.Receive("AirboatMod.Menu.Action", function(_, ply)
+	net.Receive("AirboatMod.Menu.Action", function()
 		env = net.ReadString()
 		action = net.ReadString()
 		args = net.ReadTable()
 		key = net.ReadString()
-
-		print(env, action, unpack(args))
 
 		if isstring(key) and key ~= "" then
 			table.insert(args, function(...)
 				net.Start("AirboatMod.Menu.Callback")
 					net.WriteString(key)
 					net.WriteTable({...})
-				net.Send(ply)
+				net.SendToServer()
 			end)
 		end
 
@@ -353,7 +428,20 @@ else
 		elseif AMMenu.SubMenus[env] then
 			local menu = AMMenu.SubMenus[env]
 
-			menu[action](menu, ply, unpack(args))
+			menu[action](menu, unpack(args))
+		end
+	end)
+
+	net.Receive("AirboatMod.Menu.Callback", function()
+		local key = net.ReadString()
+		local args = net.ReadTable()
+
+		local callback = AMMenu.Callbacks[key]
+
+		if callback then
+			callback.Callback(unpack(args))
+
+			AMMenu.Callbacks[key] = nil
 		end
 	end)
 end
