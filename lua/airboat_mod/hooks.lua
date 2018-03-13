@@ -2,13 +2,13 @@
 hook.Add("PlayerSay", "Airboat", function(ply, text, isTeam)
 	if text == "!boat" then
 		local amPlayer = AMMain.NewPlayer(ply)
-		AMMenu.SendMenu(amPlayer)
+		AMMenu.ShowMenu(ply)
 	end
 end)
 
 concommand.Add("airboatmod_play", function(ply, cmd, args)
 	local amPlayer = AMMain.NewPlayer(ply)
-	AMMenu.SendMenu(amPlayer)
+	AMMenu.ShowMenu(ply)
 end)
 
 -- Main game ticks
@@ -23,7 +23,7 @@ hook.Add("CanPlayerEnterVehicle", "Airboat", function(ply, boat)
 			if amPlayer:GetPlaying() then
 				return true
 			end
-			AMMenu.SendMenu(amPlayer)
+			AMMenu.ShowMenu(ply)
 			return false
 		else
 			return false
@@ -36,7 +36,7 @@ hook.Add("CanExitVehicle", "Airboat", function(boat, ply)
 	local amPlayer = ply.AMPlayer
 
 	if amPlayer and amPlayer.AMBoat and amPlayer.AMBoat.Entity and amPlayer.AMBoat.Entity == boat then
-		AMMenu.SendMenu(amPlayer)
+		AMMenu.ShowMenu(ply)
 		return false
 	end
 end)

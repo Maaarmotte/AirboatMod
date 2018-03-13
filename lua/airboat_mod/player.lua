@@ -52,7 +52,7 @@ function AMPlayer:CheckKey(key)
 end
 
 function AMPlayer:Respawn()
-	AMMenu.SendMenu(self)
+	AMMenu.ShowMenu(self.Entity)
 end
 
 function AMPlayer:SetPlaying(value)

@@ -28,7 +28,7 @@ function AMMod:MountHolo(amBoat, model, pos, ang, scale, material, color)
 		table.insert(self.Props, ent)
 		return ent
 	else
-		local ent = AMMenu.MountHolo(amBoat, model, pos, ang, scale, material, color)
+		local ent = AMMenu.SubMenus["mods"].MountHolo(amBoat, model, pos, ang, scale, material, color)
 		return ent
 	end
 end

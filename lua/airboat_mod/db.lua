@@ -68,6 +68,7 @@ function AMDatabase.GetSpawns(map)
 	for _, data in pairs(rep) do
 		table.insert(spawns, {
 			id = tonumber(data.id),
+			enabled = tonumber(data.enabled) == 1,
 			min = Vector(data.minX, data.minY, data.minZ),
 			max = Vector(data.maxX, data.maxY, data.maxZ)
 		})
@@ -96,12 +97,18 @@ function AMDatabase.RemoveSpawn(id)
 		id))
 end
 
+function AMDatabase.EnableSpawn(id, enable)
+	sql.Query(string.format([[
+		UPDATE AMMod_spawns SET enabled = %d WHERE id = %d]],
+		enable and 1 or 0, id))
+end
 
 if not sql.TableExists("AMMod_spawns") then
 	sql.Query([[
 		CREATE TABLE AMMod_spawns(
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			map TEXT,
+			enabled INTEGER DEFAULT 1,
 			minX INTEGER, minY INTEGER, minZ INTEGER,
 			maxX INTEGER, maxY INTEGER, maxZ INTEGER
 		)]])
