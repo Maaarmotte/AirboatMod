@@ -1,3 +1,6 @@
+AMMain.RespawnTime = 3
+AMMain.SuicideTime = 10
+
 
 function AMMain.NewPlayer(ply)
 	local amPly = ply.AMPlayer or AMPlayer.New(ply)

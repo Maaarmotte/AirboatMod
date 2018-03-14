@@ -238,17 +238,27 @@ function AMBoat:UnmountMods()
 end
 
 function AMBoat:CheckKeys()
-	if self.AMPlayer:CheckKey(IN_SPEED) and self.Mods["shift"] then
-		self.Mods["shift"]:Activate(self.AMPlayer, self)
-	end
-	if self.AMPlayer:CheckKey(IN_JUMP) and self.Mods["space"] then
-		self.Mods["space"]:Activate(self.AMPlayer, self)
-	end
-	if self.AMPlayer:CheckKey(IN_ATTACK) and self.Mods["mouse1"] then
-		self.Mods["mouse1"]:Activate(self.AMPlayer, self)
-	end
-	if self.AMPlayer:CheckKey(IN_WALK) and self.Mods["powerup"] then
-		self.Mods["powerup"]:Activate(self.AMPlayer, self)
+	local amPly = self.AMPlayer
+
+	if amPly:IsAlive() then
+		if amPly:CheckKey(IN_SPEED) and self.Mods["shift"] then
+			self.Mods["shift"]:Activate(amPly, self)
+		end
+		if amPly:CheckKey(IN_JUMP) and self.Mods["space"] then
+			self.Mods["space"]:Activate(amPly, self)
+		end
+		if amPly:CheckKey(IN_ATTACK) and self.Mods["mouse1"] then
+			self.Mods["mouse1"]:Activate(amPly, self)
+		end
+		if amPly:CheckKey(IN_WALK) and self.Mods["powerup"] then
+			self.Mods["powerup"]:Activate(amPly, self)
+		end
+	else
+		if amPly:CheckKey(IN_JUMP) or amPly:CheckKey(IN_ATTACK) then
+			if CurTime() - amPly.LastDeath > AMMain.RespawnTime then
+				amPly:Spawn()
+			end
+		end
 	end
 end
 
@@ -334,10 +344,11 @@ end
 
 -- Hooks
 function AMBoat:OnDeath(attacker)
-	local ply = self.AMPlayer:GetEntity()
+	local amPly = self.AMPlayer
+	local ply = amPly:GetEntity()
 
 	-- Kill the player
-	ply:Kill()
+	amPly:Kill()
 
 	-- Play effects and sounds
 	local other = AMBoat.GetBoat(attacker)
@@ -351,13 +362,10 @@ function AMBoat:OnDeath(attacker)
 
 	-- Make it invulnerable et respawn player
 	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
-	self.Entity:SetColor(Color(255, 255, 255, 100))
 
-	timer.Simple(4, function()
-		if not self.AMPlayer.Entity:Alive() then
-			self.AMPlayer:Respawn()
-		end
-	end)
+	local color = self.Entity:GetColor()
+	color.a = 100
+	self.Entity:SetColor(color)
 
 	-- Update score
 	if IsValid(ply) then
@@ -367,11 +375,16 @@ function AMBoat:OnDeath(attacker)
 			local otherPly = other:GetPlayer():GetEntity()
 
 			AMDatabase.IncPlayerScore(otherPly, "kills")
-			LogBox:Broadcast(team.GetColor(otherPly:Team()), otherPly:Name() .. " (" .. AMDatabase.GetPlayerScore(otherPly, "kills") .. ")",
-				Color(255, 255, 255), " completely destroyed ", team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")")
+
+			if LogBox then
+				LogBox:Broadcast(team.GetColor(otherPly:Team()), otherPly:Name() .. " (" .. AMDatabase.GetPlayerScore(otherPly, "kills") .. ")",
+					Color(255, 255, 255), " completely destroyed ", team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")")
+			end
 		else
-			LogBox:Broadcast(team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")",
-				Color(255, 255, 255), " crushed himself into a wall !")
+			if LogBox then
+				LogBox:Broadcast(team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")",
+					Color(255, 255, 255), " crushed himself into a wall !")
+			end
 		end
 	end
 

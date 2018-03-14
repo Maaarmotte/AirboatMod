@@ -14,6 +14,7 @@ function AMPlayer.New(ply)
 	self.OwnedMods = { "boost", "jump", "boost2", "flamethrower", "freezer" }
 	self.Score = 0
 	self.Color = Color(196, 185, 155)
+	self.Alive = false
 
 	ply.AMPlayer = self
 
@@ -87,6 +88,8 @@ function AMPlayer:Spawn()
 		ply:Spawn()
 	end
 
+	self.Alive = true
+
 	local amBoat = self:GetAirboat() or AMBoat.New()
 
 	if not amBoat:GetEntity() or not amBoat:GetEntity():IsValid() then
@@ -139,4 +142,27 @@ function AMPlayer:Leave()
 			self:GetAirboat():Synchronize()
 		end
 	end
+end
+
+function AMPlayer:IsAlive()
+	return self.Alive
+end
+
+function AMPlayer:Kill()
+	local ply = self:GetEntity()
+
+	self.Alive = false
+	self.LastDeath = CurTime()
+
+	AMMenu.Send(ply, "Main", "NextRespawn", self.LastDeath + AMMain.RespawnTime)
+
+	timer.Simple(AMMain.RespawnTime * 1.5, function()
+		if not self:IsAlive() then
+			AMMenu.ShowMenu(self.Entity)
+		end
+	end)
+end
+
+function AMPlayer:Suicide()
+
 end

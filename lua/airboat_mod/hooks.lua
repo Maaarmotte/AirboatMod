@@ -58,3 +58,23 @@ hook.Add("PlayerSpawn", "AirboatMod", function(ply)
 		amPlayer:Spawn()
 	end
 end)
+
+hook.Add("VehicleMove", "AirboatMod", function(ply, veh, mv)
+	local amPly = ply.AMPlayer
+
+	if amPly and amPly:GetPlaying() then
+		if not amPly:IsAlive() then
+			veh:SetSteering(0, 0)
+			veh:SetThrottle(0)
+		end
+	end
+end)
+
+
+hook.Add("CanPlayerSuicide", "AirboatMod", function(ply)
+	local amPly = ply.AMPlayer
+
+	if amPly and amPly:GetPlaying() then
+		return false
+	end
+end)
