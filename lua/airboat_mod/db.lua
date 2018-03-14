@@ -1,3 +1,35 @@
+
+local function request(req, ...)
+	local args = {...}
+	local succ, err
+
+	if isfunction(args[#args - 1]) then
+		succ = table.remove(args, #args - 1)
+		err = table.remove(args, #args)
+	elseif isfunction(args[#args]) then
+		succ = table.remove(args, #args)
+	end
+
+	for key, value in pairs(args) do
+		args[key] = isstring(value) and sql.SQLStr(value) or value
+	end
+
+	local freq = string.format(req, unpack(args))
+	local rep = sql.Query(freq)
+	print(freq)
+
+	if rep == false then
+		if not (isfunction(err) and err(freq, sql.LastError()) ~= nil) then
+			error("Airboat SQL error - " .. freq .. " - " .. sql.LastError())
+		end
+	else
+		if isfunction(succ) then
+			return succ(rep)
+		end
+	end
+end
+
+
 -- Make sure tables already exist
 if not sql.TableExists("AMMod_scores") then
 	sql.Query("CREATE TABLE AMMod_scores(steamid TEXT PRIMARY KEY, kills INTEGER, deaths INTEGER);")
@@ -61,50 +93,50 @@ end
 
 
 function AMDatabase.GetSpawns(map)
-	local rep = sql.Query("SELECT * FROM AMMod_spawns WHERE map='" .. map .. "';")
+	return request("SELECT * FROM AMMod_spawns WHERE map=%s;", map, function(rep)
+		local spawns = {}
+		
+		for _, data in pairs(rep or {}) do
+			table.insert(spawns, {
+				id = tonumber(data.id),
+				enabled = tonumber(data.enabled) == 1,
+				min = Vector(data.minX, data.minY, data.minZ),
+				max = Vector(data.maxX, data.maxY, data.maxZ)
+			})
+		end
 
-	local spawns = {}
-
-	for _, data in pairs(rep) do
-		table.insert(spawns, {
-			id = tonumber(data.id),
-			enabled = tonumber(data.enabled) == 1,
-			min = Vector(data.minX, data.minY, data.minZ),
-			max = Vector(data.maxX, data.maxY, data.maxZ)
-		})
-	end
-
-	return spawns
+		return spawns
+	end)
 end
 
 function AMDatabase.NewSpawn(map, min, max)
-	sql.Query(string.format([[
+	request([[
 		INSERT INTO
 			AMMod_spawns(map, minX, minY, minZ, maxX, maxY, maxZ)
-			VALUES('%s', %d, %d, %d, %d, %d, %d);]],
-		map, min.x, min.y, min.z, max.x, max.y, max.z))
+			VALUES(%s, %d, %d, %d, %d, %d, %d);]],
+		map, min.x, min.y, min.z, max.x, max.y, max.z)
 end
 
 function AMDatabase.EditSpawn(id, min, max)
-	sql.Query(string.format([[
+	request([[
 		UPDATE AMMod_spawns SET minX = %d, minY = %d, minZ = %d, maxX = %d, maxY = %d, maxZ = %d WHERE id = %d]],
-		min.x, min.y, min.z, max.x, max.y, max.z, id))
+		min.x, min.y, min.z, max.x, max.y, max.z, id)
 end
 
 function AMDatabase.RemoveSpawn(id)
-	sql.Query(string.format([[
+	request([[
 		DELETE FROM AMMod_spawns WHERE id = %d]],
-		id))
+		id)
 end
 
 function AMDatabase.EnableSpawn(id, enable)
-	sql.Query(string.format([[
+	request([[
 		UPDATE AMMod_spawns SET enabled = %d WHERE id = %d]],
-		enable and 1 or 0, id))
+		enable and 1 or 0, id)
 end
 
 if not sql.TableExists("AMMod_spawns") then
-	sql.Query([[
+	request([[
 		CREATE TABLE AMMod_spawns(
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			map TEXT,

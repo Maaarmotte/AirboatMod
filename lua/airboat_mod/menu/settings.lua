@@ -73,6 +73,8 @@ if SERVER then
 			return
 		end
 
+		AMSpawn.Update()
+
 		callback(AMSpawns)
 	end
 
