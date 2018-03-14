@@ -2,6 +2,8 @@ AMMenu = AMMenu or {}
 AMMenu.SubMenus = AMMenu.SubMenus or {}
 AMMenu.Callbacks = AMMenu.Callbacks or {}
 
+AMMenu.PlayButtonEnabled = true
+
 local SubMenu = {}
 local SubMenu_mt = {__index = function(tab, key) return
 
@@ -106,7 +108,10 @@ if SERVER then
 		if not amPly then return end
 
 		amPly:SetSettings(settings)
-		amPly:Spawn()
+
+		if not amPly:GetPlaying() or amPly:CanRespawn() then
+			amPly:Spawn()
+		end
 	end
 
 	function AMMenu.Receive.Leave(ply, settings)
@@ -114,6 +119,17 @@ if SERVER then
 		if not amPly then return end
 
 		amPly:Leave()
+	end
+
+	function AMMenu.Receive.Respawn(ply, settings)
+		local amPly = AMPlayer.GetPlayer(ply)
+		if not amPly then return end
+
+		amPly:SetSettings(settings)
+
+		if amPly:IsAlive() then
+			amPly:Suicide()
+		end
 	end
 else
 	function SubMenu:Send(action, ...)
@@ -171,7 +187,9 @@ else
 	function AMMenu.StyleButtonLight(self, w, h)
 		local color = Color(234, 234, 234, 255)
 
-		if self.Depressed or self:IsSelected() or self:GetToggle() then
+		if not self:IsEnabled() then
+			color = Color(210, 210, 210, 255)
+		elseif self.Depressed or self:IsSelected() or self:GetToggle() then
 			color = Color(38, 174, 255)
 		elseif self.Hovered then
 			color = Color(245, 245, 245, 255)
@@ -296,18 +314,21 @@ else
 			surface.DrawRect(0, 0, w, h)
 		end
 
-		local LeaveBtn = vgui.Create("DButton", footerMenu)
-		LeaveBtn:Dock(RIGHT)
-		LeaveBtn:DockMargin(0, 5, 5 ,5)
-		LeaveBtn:SetText("Leave")
-		LeaveBtn:SetWide(100)
-		LeaveBtn:SetFont("AM_Title")
-		LeaveBtn.Paint = AMMenu.StyleButtonLight
-		function LeaveBtn:DoClick()
+		local leaveBtn = vgui.Create("DButton", footerMenu)
+		leaveBtn:Dock(RIGHT)
+		leaveBtn:DockMargin(0, 5, 5 ,5)
+		leaveBtn:SetText("Leave")
+		leaveBtn:SetWide(100)
+		leaveBtn:SetFont("AM_Title")
+		leaveBtn:SetEnabled(AMMenu.LeaveButtonEnable)
+		leaveBtn.Paint = AMMenu.StyleButtonLight
+		function leaveBtn:DoClick()
 			main:Close()
 
 			AMMenu.Send("Main", "Leave", AMMenu.Settings)
 		end
+
+		AMMenu.LeaveButton = leaveBtn
 
 		local playBtn = vgui.Create("DButton", footerMenu)
 		playBtn:Dock(RIGHT)
@@ -315,6 +336,7 @@ else
 		playBtn:SetText("Play")
 		playBtn:SetWide(100)
 		playBtn:SetFont("AM_Title")
+		playBtn:SetEnabled(AMMenu.PlayButtonEnabled)
 		playBtn.Paint = AMMenu.StyleButtonLight
 		function playBtn:DoClick()
 			main:Close()
@@ -322,6 +344,25 @@ else
 			AMMenu.Settings.Playing = true
 			AMMenu.Send("Main", "Play", AMMenu.Settings)
 		end
+
+		AMMenu.PlayButton = playBtn
+		AMMenu.Leaveto = true
+
+		local respawnBtn = vgui.Create("DButton", footerMenu)
+		respawnBtn:Dock(RIGHT)
+		respawnBtn:DockMargin(0, 5, 5 ,5)
+		respawnBtn:SetText("Suicide")
+		respawnBtn:SetWide(100)
+		respawnBtn:SetFont("AM_Title")
+		respawnBtn:SetEnabled(AMMenu.RespawnButtonEnabled)
+		respawnBtn.Paint = AMMenu.StyleButtonLight
+		function respawnBtn:DoClick()
+			main:Close()
+
+			AMMenu.Send("Main", "Respawn", AMMenu.Settings)
+		end
+
+		AMMenu.RespawnButton = respawnBtn
 
 		local credit = vgui.Create("DLabel", footerMenu)
 		credit:Dock(FILL)
@@ -380,6 +421,57 @@ else
 		menu.Tab.Selected = true
 	end
 
+
+	function AMMenu.SetStatus(status, info)
+		AMMenu.Status = status
+
+		AMHud.SetStatus(status, info)
+
+		if status == "playing" then
+			AMMenu.PlayButtonEnabled = false
+			AMMenu.RespawnButtonEnabled = true
+			AMMenu.LeaveButtonEnable = true
+
+			if IsValid(AMMenu.MainFrame) then
+				AMMenu.PlayButton:SetEnabled(false)
+				AMMenu.RespawnButton:SetEnabled(true)
+				AMMenu.LeaveButton:SetEnabled(true)
+			end
+		elseif status == "suicide" then
+			AMMenu.PlayButtonEnabled = false
+			AMMenu.RespawnButtonEnabled = false
+			AMMenu.LeaveButtonEnable = true
+
+			if IsValid(AMMenu.MainFrame) then
+				AMMenu.PlayButton:SetEnabled(false)
+				AMMenu.RespawnButton:SetEnabled(false)
+				AMMenu.LeaveButton:SetEnabled(true)
+			end
+		elseif status == "dead" then
+			AMMenu.PlayButtonEnabled = info.CanRespawn
+			AMMenu.RespawnButtonEnabled = false
+			AMMenu.LeaveButtonEnable = true
+
+			if IsValid(AMMenu.MainFrame) then
+				AMMenu.PlayButton:SetEnabled(info.CanRespawn)
+				AMMenu.RespawnButton:SetEnabled(false)
+				AMMenu.LeaveButton:SetEnabled(true)
+			end
+		elseif status == "notplaying" then
+			AMMenu.PlayButtonEnabled = true
+			AMMenu.RespawnButtonEnabled = false
+			AMMenu.LeaveButtonEnable = false
+
+			if IsValid(AMMenu.MainFrame) then
+				AMMenu.PlayButton:SetEnabled(true)
+				AMMenu.RespawnButton:SetEnabled(false)
+				AMMenu.LeaveButton:SetEnabled(false)
+			end
+		end
+	end
+
+
+
 	function AMMenu.Send(env, action, ...)
 		local args = {...}
 		local key
@@ -425,6 +517,8 @@ else
 
 		if env == "Main" and isfunction(AMMenu[action]) then
 			AMMenu[action](unpack(args))
+		elseif env == "HUD" and isfunction(AMHud[action]) then
+			AMHud[action](unpack(args))
 		elseif AMMenu.SubMenus[env] then
 			local menu = AMMenu.SubMenus[env]
 

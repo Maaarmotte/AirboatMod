@@ -63,7 +63,7 @@ hook.Add("VehicleMove", "AirboatMod", function(ply, veh, mv)
 	local amPly = ply.AMPlayer
 
 	if amPly and amPly:GetPlaying() then
-		if not amPly:IsAlive() then
+		if not amPly:IsAlive() or amPly.WantToDie then
 			veh:SetSteering(0, 0)
 			veh:SetThrottle(0)
 		end
@@ -75,6 +75,7 @@ hook.Add("CanPlayerSuicide", "AirboatMod", function(ply)
 	local amPly = ply.AMPlayer
 
 	if amPly and amPly:GetPlaying() then
+		amPly:Suicide()
 		return false
 	end
 end)

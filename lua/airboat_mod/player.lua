@@ -89,6 +89,7 @@ function AMPlayer:Spawn()
 	end
 
 	self.Alive = true
+	self.WantToDie = false
 
 	local amBoat = self:GetAirboat() or AMBoat.New()
 
@@ -100,12 +101,24 @@ function AMPlayer:Spawn()
 
 	local boat = amBoat:GetEntity()
 
+	AMMenu.Send(ply, "Main", "SetStatus", "playing", {})
+
 	self:SetPlaying(true)
 	ply:EnterVehicle(boat)
 	ply:EmitSound("ui/itemcrate_smash_ultrarare_short.wav")
 	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, boat, 0)
 
 	amBoat:Spawn()
+end
+
+function AMPlayer:CanRespawn()
+	if self:IsAlive() then
+		return false
+	elseif CurTime() - self.LastDeath >= AMMain.RespawnTime then
+		return true
+	end
+
+	return false
 end
 
 function AMPlayer:IsOwningMod(modid)
@@ -130,8 +143,12 @@ function AMPlayer:UnsetKey(key)
 end
 
 function AMPlayer:Leave()
+	local ply = self:GetEntity()
+
 	if self:GetPlaying() then
 		self:SetPlaying(false)
+
+		AMMenu.Send(ply, "Main", "SetStatus", "notplaying", {})
 
 		if self:GetAirboat() then
 			self.Entity:ExitVehicle()
@@ -150,19 +167,52 @@ end
 
 function AMPlayer:Kill()
 	local ply = self:GetEntity()
+	local amBoat = self:GetAirboat()
+	local boat = amBoat:GetEntity()
 
 	self.Alive = false
 	self.LastDeath = CurTime()
 
-	AMMenu.Send(ply, "Main", "NextRespawn", self.LastDeath + AMMain.RespawnTime)
+	self.WantToDie = false
 
-	timer.Simple(AMMain.RespawnTime * 1.5, function()
-		if not self:IsAlive() then
-			AMMenu.ShowMenu(self.Entity)
+	amBoat:ExplodeEffect()
+
+	-- Make it invulnerable et respawn player
+	boat:SetRenderMode(RENDERMODE_TRANSALPHA)
+
+	local color = boat:GetColor()
+	color.a = 100
+	boat:SetColor(color)
+
+	AMMenu.Send(ply, "Main", "SetStatus", "dead", {RespawnTime = AMMain.RespawnTime, CanRespawn = false})
+
+	timer.Simple(AMMain.RespawnTime, function()
+		if self:GetPlaying() then
+			AMMenu.Send(ply, "Main", "SetStatus", "dead", {RespawnTime = 0, CanRespawn = self:CanRespawn()})
 		end
 	end)
 end
 
 function AMPlayer:Suicide()
+	if not self:IsAlive() or self.WantToDie then return end
+	local ply = self:GetEntity()
 
+	self.WantToDie = true
+	self.SuicideCountdown = CurTime()
+
+	AMMenu.Send(ply, "Main", "SetStatus", "suicide", {SuicideTime = AMMain.SuicideTime})
+
+	timer.Simple(AMMain.SuicideTime, function()
+		if CurTime() - self.SuicideCountdown >= AMMain.SuicideTime and self.WantToDie then
+			self:Kill()
+		end
+	end)
+end
+
+function AMPlayer:CancelSuicide()
+	local ply = self:GetEntity()
+
+	self.WantToDie = false
+
+	AMMenu.Send(ply, "Main", "SetStatus", "playing", {})
 end

@@ -240,7 +240,7 @@ end
 function AMBoat:CheckKeys()
 	local amPly = self.AMPlayer
 
-	if amPly:IsAlive() then
+	if amPly:IsAlive() and not amPly.WantToDie then
 		if amPly:CheckKey(IN_SPEED) and self.Mods["shift"] then
 			self.Mods["shift"]:Activate(amPly, self)
 		end
@@ -255,8 +255,14 @@ function AMBoat:CheckKeys()
 		end
 	else
 		if amPly:CheckKey(IN_JUMP) or amPly:CheckKey(IN_ATTACK) then
-			if CurTime() - amPly.LastDeath > AMMain.RespawnTime then
-				amPly:Spawn()
+			if not amPly:IsAlive() then
+				if CurTime() - amPly.LastDeath > AMMain.RespawnTime then
+					amPly:Spawn()
+				end
+			elseif amPly.WantToDie then
+				if CurTime() - amPly.SuicideCountdown < AMMain.SuicideTime then
+					amPly:CancelSuicide()
+				end
 			end
 		end
 	end
@@ -353,19 +359,10 @@ function AMBoat:OnDeath(attacker)
 	-- Play effects and sounds
 	local other = AMBoat.GetBoat(attacker)
 
-	self:ExplodeEffect()
-
 	if other and other:IsPlaying() then
 		other:GetEntity():EmitSound("ambient/bumper_car_cheer" .. math.random(3) .. ".wav")
 		timer.Simple(1, function() other:GetEntity():EmitSound("items/samurai/tf_conch.wav") end)
 	end
-
-	-- Make it invulnerable et respawn player
-	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
-
-	local color = self.Entity:GetColor()
-	color.a = 100
-	self.Entity:SetColor(color)
 
 	-- Update score
 	if IsValid(ply) then

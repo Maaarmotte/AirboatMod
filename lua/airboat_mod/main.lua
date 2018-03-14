@@ -1,4 +1,4 @@
-AMMain.RespawnTime = 3
+AMMain.RespawnTime = 5
 AMMain.SuicideTime = 10
 
 
@@ -24,5 +24,6 @@ function AMMain.Tick()
 end
 
 function AMMain.IsPlayerAdmin(ply)
-	return ply and ply:IsAdmin()
+	-- return ply and ply:IsAdmin()
+	return true
 end

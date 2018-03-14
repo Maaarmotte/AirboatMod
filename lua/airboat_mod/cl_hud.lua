@@ -36,12 +36,11 @@ if AMHud and AMHud.Frame then
 	AMHud.Remove()
 end
 
-AMHud = {}
+AMHud = AMHud or {}
 AMHud.SizeX = 224
 AMHud.SizeY = 80
 
 local mod_order = {"space", "shift", "mouse1", "powerup"}
-
 
 function AMHud.Build()
 	if AMHud.Frame then return end
@@ -133,6 +132,87 @@ function AMHud.Remove()
 	end
 end
 
+
+function AMHud.SetStatus(status, info)
+	AMHud.Status = info
+	info.Status = status
+	info.Start = CurTime()
+end
+
+AMHud.BigCountdown = {
+	Enabled = false,
+	Text = "",
+	Start = 0,
+	Time = 0
+}
+
+function AMHud.StartBigCountdown(text, time)
+	AMHud.BigCountdown.Enabled = true
+	AMHud.BigCountdown.Text = text
+	AMHud.BigCountdown.Start = CurTime()
+	AMHud.BigCountdown.Time = time
+end
+
+function AMHud.StopBigCountdown()
+	AMHud.BigCountdown.Enabled = false
+end
+
+
+surface.CreateFont("AM_HUD_Big", {
+	font = "Arial",
+	size = 50,
+	weight = 1000
+})
+
+surface.CreateFont("AM_HUD_Medium", {
+	font = "Arial",
+	size = 35,
+	weight = 1000
+})
+
+surface.CreateFont("AM_HUD_Small", {
+	font = "Arial",
+	size = 20,
+	weight = 1000
+})
+
+
+local blur = Material("pp/blurscreen")
+function AMHud.PaintBigCountdown(w, h)
+	local info = AMHud.Status
+
+	if info.Status == "dead" or info.Status == "suicide" then
+		surface.SetDrawColor(255, 255, 255)
+		surface.SetMaterial(blur)
+
+		for i = 1, 5 do
+			blur:SetFloat("$blur", (i / 5) * (2))
+			blur:Recompute()
+			render.UpdateScreenEffectTexture()
+			surface.DrawTexturedRect(0, 0, w, h)
+		end
+
+		surface.SetDrawColor(0, 0, 0, 150)
+		surface.DrawRect(0, 0, w, h)
+
+		if info.Status == "dead" then
+			local time = math.ceil(info.Start + info.RespawnTime - CurTime())
+
+			if time > 0 then
+				draw.Text({text = string.format("Respawn in %s second%s", time, time>1 and "s" or ""), pos = {ScrW()/2, 400}, xalign = TEXT_ALIGN_CENTER, yalign = TEXT_ALIGN_CENTER, font = "AM_HUD_Big"})
+			else
+				draw.Text({text = "Press [ ".. string.upper(input.LookupBinding("jump")) .. " ] to respawn", pos = {ScrW()/2, 400}, xalign = TEXT_ALIGN_CENTER, yalign = TEXT_ALIGN_CENTER, font = "AM_HUD_Medium"})
+				draw.Text({text = "or [ ".. string.upper(input.LookupBinding("use")) .. " ] to show the menu.", pos = {ScrW()/2, 430}, xalign = TEXT_ALIGN_CENTER, yalign = TEXT_ALIGN_CENTER, font = "AM_HUD_Small"})
+			end
+		elseif info.Status == "suicide" then
+			local time = math.ceil(info.Start + info.SuicideTime - CurTime())
+
+			draw.Text({text = string.format("Suicide in %s second%s", time, time>1 and "s" or ""), pos = {ScrW()/2, 400}, xalign = TEXT_ALIGN_CENTER, yalign = TEXT_ALIGN_CENTER, font = "AM_HUD_Big"})
+			draw.Text({text = "Press [ ".. string.upper(input.LookupBinding("jump")) .. " ] to cancel.", pos = {ScrW()/2, 430}, xalign = TEXT_ALIGN_CENTER, yalign = TEXT_ALIGN_CENTER, font = "AM_HUD_Small"})
+		end
+	end
+end
+
 -- Don't draw undo list when playing
 
 local bock = {
@@ -145,10 +225,19 @@ local bock = {
 	FancyHUDArmor = true,
 	FancyHUDAmmo = true
 }
-hook.Add("HUDShouldDraw", "am_disable_papate_hud", function(name)
-	local amPlayer = AMPlayer.GetPlayer(LocalPlayer())
 
-	if amPlayer and amPlayer:GetPlaying() then
+hook.Add("HUDShouldDraw", "am_disable_papate_hud", function(name)
+	local amPly = AMPlayer.GetPlayer(LocalPlayer())
+
+	if amPly and amPly:GetPlaying() then
 		return not bock[name]
+	end
+end)
+
+hook.Add("HUDPaint", "AirboatMod", function()
+	local amPly = AMPlayer.GetPlayer(LocalPlayer())
+
+	if amPly and amPly:GetPlaying() then
+		AMHud.PaintBigCountdown(ScrW(), ScrH())
 	end
 end)
