@@ -224,18 +224,23 @@ else
 
 		AMMenu.Build()
 
+		local keys = table.GetKeys(AMMenu.SubMenus)
+
+		table.sort(keys, function(a, b)
+			return AMMenu.SubMenus[a].Position < AMMenu.SubMenus[b].Position
+		end)
+
 		table.SortByMember(AMMenu.SubMenus, "Position", true)
 
-		for name, menu in pairs(AMMenu.SubMenus) do
+		for _, name in pairs(keys) do
+			local menu = AMMenu.SubMenus[name]
+
 			if not isfunction(menu.CanSee) or menu:CanSee() then
 				AMMenu.BuildSubMenu(name)
 			end
 		end
 
-		for name, menu in pairs(AMMenu.SubMenus) do
-			AMMenu.SelectedSubMenu(name)
-			break
-		end
+		AMMenu.SelectedSubMenu(keys[1])
 	end
 
 	function AMMenu.Build()
