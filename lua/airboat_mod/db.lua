@@ -16,7 +16,6 @@ local function request(req, ...)
 
 	local freq = string.format(req, unpack(args))
 	local rep = sql.Query(freq)
-	print(freq)
 
 	if rep == false then
 		if not (isfunction(err) and err(freq, sql.LastError()) ~= nil) then
@@ -95,7 +94,7 @@ end
 function AMDatabase.GetSpawns(map)
 	return request("SELECT * FROM AMMod_spawns WHERE map=%s;", map, function(rep)
 		local spawns = {}
-		
+
 		for _, data in pairs(rep or {}) do
 			table.insert(spawns, {
 				id = tonumber(data.id),

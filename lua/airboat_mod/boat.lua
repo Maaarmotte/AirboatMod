@@ -6,15 +6,15 @@ AMBoat_mt = {__index = function(tab, key) return AMBoat[key] end}
 
 -- Constructor
 function AMBoat.New()
-	local self      	= {}
-	self.Entity     	= nil
-	self.AMPlayer   	= nil
-	self.AMPowerUp  	= nil
-	self.Mods       	= { shift=AMMods.Instantiate("boost"), space=AMMods.Instantiate("jump") }
-	self.Weapons    	= {}
-	self.SmokeEntity	= nil
-	self.LastBump   	= 0
-	self.Health     	= 15
+	local self = {}
+	self.Entity = nil
+	self.AMPlayer = nil
+	self.AMPowerUp = nil
+	self.Mods = {}
+	self.Weapons = {}
+	self.SmokeEntity = nil
+	self.LastBump = 0
+	self.Health = 15
 	setmetatable(self, AMBoat_mt)
 
 	return self
@@ -62,7 +62,7 @@ function AMBoat:SetHealth(value)
 end
 
 function AMBoat:MountPowerUp(name)
-	self.Mods["powerup"] = AMMods.Instantiate(name)
+	self.Mods["powerup"] = AMMods.Instantiate(name, self)
 	self.Mods["powerup"]:Mount(self)
 
 	self:Synchronize()
@@ -212,7 +212,7 @@ function AMBoat:SetMod(modid)
 		self:UnsetKey(key)
 	end
 
-	self.Mods[key] = AMMods.Instantiate(modid)
+	self.Mods[key] = AMMods.Instantiate(modid, self)
 	-- self.Mods[key]:Mount(self)
 end
 
@@ -275,7 +275,7 @@ end
 function AMBoat:Damage(amount, attacker)
 	for _, mod in pairs(self.Mods) do
 		if mod.OnDamage then
-			amount = mod:OnDamage(self, attacker, amount) or amount
+			amount = mod:OnDamage(attacker, amount) or amount
 		end
 	end
 
@@ -283,7 +283,7 @@ function AMBoat:Damage(amount, attacker)
 	if amBoat then
 		for _, mod in pairs(amBoat:GetMods()) do
 			if isfunction(mod.OnAttack) then
-				amount = mod:OnAttack(amBoat, self, amount) or amount
+				amount = mod:OnAttack(amBoat, amount) or amount
 			end
 		end
 	end

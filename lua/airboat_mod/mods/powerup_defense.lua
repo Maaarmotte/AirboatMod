@@ -11,7 +11,18 @@ mod.Model      	= "models/pickups/pickup_powerup_defense.mdl"
 mod.ModelScale 	= 1.6
 mod.ModelOffset	= -Vector(0,0,36*mod.ModelScale)
 
-function mod.Draw(info, w, y, amBoat, amPlayer)
+function mod:Initialize()
+end
+
+function mod:OnMount()
+end
+
+function mod:OnUnmount()
+	local boat = self.AMBoat:GetEntity()
+	boat:SetMaterial(self.oldmat)
+end
+
+function mod.Draw(info, w, y)
 	surface.SetFont("am_hud_title")
 	surface.SetTextColor(235, 235, 235, 255)
 	surface.SetTextPos(12, y)
@@ -32,36 +43,28 @@ function mod.Draw(info, w, y, amBoat, amPlayer)
 	return 40
 end
 
-function mod:Mount(amBoat)
-end
-
-function mod:Unmount(amBoat)
-	local boat = amBoat:GetEntity()
-	boat:SetMaterial(self.oldmat)
-end
-
-function mod:Run(amPly, amBoat)
+function mod:Run()
 	if self.isRuning then return end
 
-	local boat	= amBoat:GetEntity()
+	local boat	= self.AMBoat:GetEntity()
 	self.oldmat = boat:GetMaterial()
 	self.isRuning = true
 	self.startTime = CurTime()
 
-	self:SendInfoToClent(amBoat, {End=CurTime()+self.Duration})
+	self:SendInfoToClent({End=CurTime()+self.Duration})
 
 	boat:SetMaterial("debug/env_cubemap_model")
 end
 
-function mod:OnDamage(amBoat, attacker, amount)
+function mod:OnDamage(attacker, amount)
 	if self.isRuning then
 		return amount/2
 	end
 end
 
-function mod:Think(amBoat)
+function mod:Think()
 	if self.isRuning and CurTime() - self.startTime > self.Duration then
-		amBoat:UnmountPowerUp()
+		self.AMBoat:UnmountPowerUp()
 	end
 end
 

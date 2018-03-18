@@ -6,25 +6,23 @@ mod.Delay = 5
 mod.Type = "shift"
 mod.LastBoost = 0
 
-function mod:Mount(amBoat)
-	print("[AM] Mounting mod: " .. mod.Name)
+function mod:OnMount()
+	self:MountHolo("models/props_trainstation/mount_connection001a.mdl", Vector(25, -40, 40), Angle(0, 0, 0), 0.5, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
+	self:MountHolo("models/props_trainstation/mount_connection001a.mdl", Vector(-25, -40, 40), Angle(0, -180, 0), 0.5, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
+	self:MountHolo("models/props_c17/canister_propane01a.mdl", Vector(40, -30, 50), Angle(0, 0, 90), 0.4, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
+	self:MountHolo("models/props_c17/canister_propane01a.mdl", Vector(-40, -30, 50), Angle(0, 0, 90), 0.4, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
 
-	self:MountHolo(amBoat, "models/props_trainstation/mount_connection001a.mdl", Vector(25, -40, 40), Angle(0, 0, 0), 0.5, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
-	self:MountHolo(amBoat, "models/props_trainstation/mount_connection001a.mdl", Vector(-25, -40, 40), Angle(0, -180, 0), 0.5, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
-	self:MountHolo(amBoat, "models/props_c17/canister_propane01a.mdl", Vector(40, -30, 50), Angle(0, 0, 90), 0.4, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
-	self:MountHolo(amBoat, "models/props_c17/canister_propane01a.mdl", Vector(-40, -30, 50), Angle(0, 0, 90), 0.4, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
+	self.PropellerR1 = self:MountHolo("models/props_phx/misc/propeller3x_small.mdl", Vector(40, -55, 50), Angle(0, 0, 90), 0.3, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
+	self.PropellerR2 = self:MountHolo("models/props_phx/misc/propeller3x_small.mdl", Vector(40, -55, 50), Angle(45, 0, 90), 0.3, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
 
-	self.PropellerR1 = self:MountHolo(amBoat, "models/props_phx/misc/propeller3x_small.mdl", Vector(40, -55, 50), Angle(0, 0, 90), 0.3, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
-	self.PropellerR2 = self:MountHolo(amBoat, "models/props_phx/misc/propeller3x_small.mdl", Vector(40, -55, 50), Angle(45, 0, 90), 0.3, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
-
-	self.PropellerL1 = self:MountHolo(amBoat, "models/props_phx/misc/propeller3x_small.mdl", Vector(-40, -55, 50), Angle(0, 0, 90), 0.3, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
-	self.PropellerL2 = self:MountHolo(amBoat, "models/props_phx/misc/propeller3x_small.mdl", Vector(-40, -55, 50), Angle(45, 0, 90), 0.3, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
+	self.PropellerL1 = self:MountHolo("models/props_phx/misc/propeller3x_small.mdl", Vector(-40, -55, 50), Angle(0, 0, 90), 0.3, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
+	self.PropellerL2 = self:MountHolo("models/props_phx/misc/propeller3x_small.mdl", Vector(-40, -55, 50), Angle(45, 0, 90), 0.3, "models/props_pipes/pipeset_metal", Color(250, 150, 100))
 end
 
-function mod:Unmount(amBoat)
+function mod:OnUnmount()
 end
 
-function mod.Draw(info, w, y, amBoat, amPlayer)
+function mod.Draw(info, w, y)
 	surface.SetFont("am_hud_title")
 	surface.SetTextColor(235, 235, 235, 255)
 	surface.SetTextPos(12, y)
@@ -45,7 +43,7 @@ function mod.Draw(info, w, y, amBoat, amPlayer)
 	return 40
 end
 
-function mod:Think(amBoat)
+function mod:Think()
 	local t = CurTime()
 	local yaw = 5
 	if t - self.LastBoost < self.Delay then
@@ -71,21 +69,21 @@ function mod:Think(amBoat)
 	self.PropellerL2:SetAngles(angL2)
 end
 
-function mod:Run(amPly, amBoat)
-	local boat = amBoat:GetEntity()
+function mod:Run()
+	local boat = self.AMBoat:GetEntity()
 	local physobj = boat:GetPhysicsObject()
 
-	self:SendInfoToClent(amBoat, {Start = CurTime()})
+	self:SendInfoToClent({Start = CurTime()})
 
 	boat:EmitSound("weapons/bumper_car_speed_boost_start.wav")
-    ParticleEffectAttach("smoke_whitebillow", PATTACH_ABSORIGIN_FOLLOW, amBoat:GetSmokeEntity(), 0)
+    ParticleEffectAttach("smoke_whitebillow", PATTACH_ABSORIGIN_FOLLOW, self.AMBoat:GetSmokeEntity(), 0)
 
-	timer.Create("boost2" .. amBoat:GetEntity():EntIndex(), 0.25, 0, function()
+	timer.Create("boost2" .. self.AMBoat:GetEntity():EntIndex(), 0.25, 0, function()
 		physobj:SetVelocity(boat:GetVelocity() + boat:GetForward()*100)
 	end)
     timer.Simple(self.Delay, function()
-        amBoat:GetSmokeEntity():StopParticles()
-        timer.Destroy("boost2" .. amBoat:GetEntity():EntIndex())
+        self.AMBoat:GetSmokeEntity():StopParticles()
+        timer.Destroy("boost2" .. self.AMBoat:GetEntity():EntIndex())
     end)
 
    	self.LastBoost = CurTime()

@@ -1,50 +1,66 @@
 AMMod = {}
-AMMod_mt = { __index = function(tab, key) return AMMod[key] end}
+AMMod_mt = { __index = function(tab, key) return AMMods.Mods[tab.Name][key] or AMMod[key] end}
 
-function AMMod.New()
+function AMMods.Instantiate(name, amBoat)
+	return AMMod.New(name, amBoat)
+end
+
+
+function AMMods.Register(mod)
+	AMMods.Mods[mod.Name] = mod
+end
+
+
+function AMMod.New(name, amBoat)
 	local self = {}
 	setmetatable(self, AMMod_mt)
-	self.Name = "none"
-	self.LastActivation = 0
-	self.Delay = 1
-	self.Type = "none"
+	self.Name = name
 	self.Mounted = false
 	self.Data = nil
 	self.Props = {}
 	self.ClientInfo = {}
+	self.AMBoat = amBoat
+	self.LastActivation = 0
+	self.Amount = self.BaseAmount or 0
+
 	return self
 end
 
-function AMMod:Activate(amPly, amBoat)
-	if CurTime() - self.LastActivation > self.Delay then
-		self:Run(amPly, amBoat)
+function AMMod:Activate()
+	if not self.Delay or CurTime() - self.LastActivation > self.Delay then
+		self:Run()
 		self.LastActivation = CurTime()
 	end
 end
 
-function AMMod:MountHolo(amBoat, model, pos, ang, scale, material, color)
+function AMMod:MountHolo(model, pos, ang, scale, material, color)
 	if SERVER then
-		local ent = amBoat:ParentHolo(model, pos, ang, scale, material, color)
+		local ent = self.AMBoat:ParentHolo(model, pos, ang, scale, material, color)
 		table.insert(self.Props, ent)
+
 		return ent
 	else
-		local ent = AMMenu.SubMenus["mods"].MountHolo(amBoat, model, pos, ang, scale, material, color)
+		local ent = AMMenu.SubMenus["mods"].MountHolo(model, pos, ang, scale, material, color)
 		return ent
 	end
 end
 
-function AMMod:SendInfoToClent(amBoat, info)
-	self.ClientInfo = istable(info) and info or {}
+function AMMod:SendInfoToClent(info)
+	self.ClientInfo = info
 
-	amBoat:Synchronize()
+	self.AMBoat:Synchronize()
 end
 
 -- Will be overrided !
-function AMMod:Mount()
+function AMMod:Initialize()
 end
 
 -- Will be overrided !
-function AMMod:Unmount()
+function AMMod:OnMount()
+end
+
+-- Will be overrided !
+function AMMod:OnUnmount()
 end
 
 -- Will be overrided !
@@ -55,43 +71,29 @@ end
 function AMMod:Think()
 end
 
-function AMMods.Instantiate(name)
-	local mod = AMMod.New()
+function AMMod:Mount()
+	if not self.Mounted then
+		self.Mounted = true
 
-	for k,v in pairs(AMMods.Mods[name]) do
-		mod[k] = v
+		self:Initialize()
+		self:OnMount()
 	end
+end
 
-	mod.Mount = function(self, amBoat)
-		if not self.Mounted then
-			self.Mounted = true
-			return AMMods.Mods[name].Mount(self, amBoat)
-		end
-	end
+function AMMod:Unmount()
+	if self.Mounted then
+		self.Mounted = false
 
-	mod.Unmount = function(self, amBoat)
-		if self.Mounted then
-			self.Mounted = false
-
-			-- Remove props/holograms assocaited to the mod
-			for _,prop in pairs(self.Props) do
-				if IsValid(prop) then
-					prop:Remove()
-				end
+		-- Remove props/holograms assocaited to the mod
+		for _,prop in pairs(self.Props) do
+			if IsValid(prop) then
+				prop:Remove()
 			end
-
-			local func = AMMods.Mods[name].Unmount or mod.Unmount
-			return func(self, amBoat)
 		end
+
+		self:OnUnmount()
 	end
-
-	return mod
 end
-
-function AMMods.Register(mod)
-	AMMods.Mods[mod.Name] = mod
-end
-
 
 -- PowerUp
 

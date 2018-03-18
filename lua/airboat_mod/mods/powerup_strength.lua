@@ -11,7 +11,16 @@ mod.Model      	= "models/pickups/pickup_powerup_strength.mdl"
 mod.ModelScale 	= 1.6
 mod.ModelOffset	= -Vector(0,0,36*mod.ModelScale)
 
-function mod.Draw(info, w, y, amBoat, amPlayer)
+function mod:Initialize()
+end
+
+function mod:OnMount()
+end
+
+function mod:OnUnmount()
+end
+
+function mod.Draw(info, w, y)
 	surface.SetFont("am_hud_title")
 	surface.SetTextColor(235, 235, 235, 255)
 	surface.SetTextPos(12, y)
@@ -32,28 +41,22 @@ function mod.Draw(info, w, y, amBoat, amPlayer)
 	return 40
 end
 
-function mod:Mount(amBoat)
-end
-
-function mod:Unmount(amBoat)
-end
-
-function mod:Run(amPly, amBoat)
+function mod:Run()
 	if self.isRuning then return end
 
 	self.isRuning = true
 	self.startTime = CurTime()
 
-	self:SendInfoToClent(amBoat, {End=CurTime()+self.Duration})
+	self:SendInfoToClent({End=CurTime()+self.Duration})
 end
 
-function mod:Think(amBoat)
+function mod:Think()
 	if self.isRuning and CurTime() - self.startTime > self.Duration then
-		amBoat:UnmountPowerUp()
+		self.AMBoat:UnmountPowerUp()
 	end
 end
 
-function mod:OnAttack(amBoat, target, amount)
+function mod:OnAttack(target, amount)
 	if self.isRuning then
 		return amount*2
 	end

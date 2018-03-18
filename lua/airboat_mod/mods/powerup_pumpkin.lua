@@ -9,15 +9,18 @@ mod.Model		= "models/pickups/pickup_powerup_knockout.mdl"
 mod.ModelScale	= 1.6
 mod.ModelOffset	= -Vector(0,0,36*mod.ModelScale)
 
-function mod:Mount(amBoat)
+function mod:Initialize()
 	self.Amount = self.BaseAmount
-	self:SendInfoToClent(amBoat, {Amount = self.Amount})
+	self:SendInfoToClent({Amount = self.Amount})
 end
 
-function mod:Unmount(amBoat)
+function mod:OnMount()
 end
 
-function mod.Draw(info, w, y, amBoat, amPlayer)
+function mod:OnUnmount()
+end
+
+function mod.Draw(info, w, y)
 	local bw = (w - 20 - 10)/mod.BaseAmount
 
 	surface.SetFont("am_hud_title")
@@ -42,20 +45,20 @@ function mod.Draw(info, w, y, amBoat, amPlayer)
 	return 40
 end
 
-function mod:Run(amPly, amBoat)	
-	local ent = amBoat:GetEntity()
+function mod:Run()
+	local ent = self.AMBoat:GetEntity()
 	local pumpkin = ents.Create("am_pumpkin")
-	
-	self:SendInfoToClent(amBoat, {Amount = self.Amount-1})
-	
+
+	self:SendInfoToClent({Amount = self.Amount-1})
+
 	pumpkin:SetPos(ent:GetPos() + ent:GetForward()*100)
-	pumpkin:SetAngles(amBoat:GetEntity():GetAngles())
-	
+	pumpkin:SetAngles(self.AMBoat:GetEntity():GetAngles())
+
 	pumpkin:Spawn()
 	pumpkin:GetPhysicsObject():SetVelocity(ent:GetVelocity() + ent:GetForward()*2000)
 	ent:EmitSound("misc/halloween/spelltick_01.wav")
-	
-	amBoat:UnmountPowerUp()
+
+	self.AMBoat:UnmountPowerUp()
 end
 
 AMMods.Register(mod)

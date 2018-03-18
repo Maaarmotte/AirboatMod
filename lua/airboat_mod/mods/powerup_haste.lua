@@ -10,16 +10,18 @@ mod.Model		= "models/pickups/pickup_powerup_haste.mdl"
 mod.ModelScale	= 1.6
 mod.ModelOffset	= -Vector(0,0,36*mod.ModelScale)
 
-function mod:Mount(amBoat)
+function mod:Initialize()
 	self.Amount = self.BaseAmount
-
-	self:SendInfoToClent(amBoat, {Amount = self.Amount})
+	self:SendInfoToClent({Amount = self.Amount})
 end
 
-function mod:Unmount(amBoat)
+function mod:OnMount()
 end
 
-function mod.Draw(info, w, y, amBoat, amPlayer)
+function mod:OnUnmount()
+end
+
+function mod.Draw(info, w, y)
 	local bw = (w - 20 - 10)/mod.BaseAmount
 
 	surface.SetFont("am_hud_title")
@@ -44,18 +46,18 @@ function mod.Draw(info, w, y, amBoat, amPlayer)
 	return 40
 end
 
-function mod:Run(amPly, amBoat)
-	local boat   	= amBoat:GetEntity()
-	local physobj	= boat:GetPhysicsObject()
+function mod:Run()
+	local boat = self.AMBoat:GetEntity()
+	local physobj = boat:GetPhysicsObject()
 	self.Amount = self.Amount - 1
 
-	self:SendInfoToClent(amBoat, {Amount = self.Amount})
+	self:SendInfoToClent({Amount = self.Amount})
 
 	physobj:SetVelocity(boat:GetVelocity() + boat:GetForward()*1000)
 	boat:EmitSound("weapons/bumper_car_speed_boost_start.wav")
 
 	if self.Amount <= 0 then
-		amBoat:UnmountPowerUp()
+		self.AMBoat:UnmountPowerUp()
 	end
 end
 

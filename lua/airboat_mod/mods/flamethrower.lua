@@ -43,31 +43,29 @@ sound.Add({
 	sound = "weapons/3rd_degree_hit_01.wav"
 })
 
-function mod:Mount(amBoat)
-	print("[AM] Mounting mod: " .. mod.Name)
-
-	self.Turret = self:MountHolo(amBoat, "models/workshop_partner/weapons/c_models/c_ai_flamethrower/c_ai_flamethrower.mdl", self.Anchor, Angle(0, 90, 0), 1)
-	self.Flames = self:MountHolo(amBoat, "models/props_junk/PopCan01a.mdl", self.Anchor + Vector(0, 50, 3), Angle(0, 90, 0), 0)
+function mod:OnMount()
+	self.Turret = self:MountHolo("models/workshop_partner/weapons/c_models/c_ai_flamethrower/c_ai_flamethrower.mdl", self.Anchor, Angle(0, 90, 0), 1)
+	self.Flames = self:MountHolo("models/props_junk/PopCan01a.mdl", self.Anchor + Vector(0, 50, 3), Angle(0, 90, 0), 0)
 	self.Flames:SetParent(self.Turret)
 end
 
-function mod:Unmount(amBoat)
+function mod:OnUnmount()
 	if IsValid(self.Turret) then
 		self.Turret:Remove()
 	end
 end
 
-function mod:Think(amBoat)
-	local amPly = amBoat:GetPlayer()
+function mod:Think()
+	local amPly = self.AMBoat:GetPlayer()
 
 	if amPly:GetPlaying() and IsValid(self.Turret) then
 		local aim = amPly:GetEntity():GetAimVector()
 		local ang = aim:Angle()
-		local boat = amBoat:GetEntity()
+		local boat = self.AMBoat:GetEntity()
 
 		if IsValid(boat) then
 			self.Turret:SetPos(self.Anchor + boat:WorldToLocal(boat:GetPos() - aim)*11)
-			self.Turret:SetAngles(ang) 
+			self.Turret:SetAngles(ang)
 		end
 	end
 end
@@ -82,7 +80,7 @@ function mod:StopFlames()
 	end
 end
 
-function mod:Run(amPly, amBoat)
+function mod:Run()
 	local t = CurTime()
 
 	if not self.Burning then
@@ -101,7 +99,7 @@ function mod:Run(amPly, amBoat)
 		self.StopFlamesFunc = function() self:StopFlames() end
 	end
 
-	local ply = amPly:GetEntity()
+	local ply = self.AMBoat:GetPlayer():GetEntity()
 	if IsValid(ply) and t - self.LastDamage > self.DamageDelay then
 		local tr = util.TraceLine({
 			start = self.Turret:GetPos(),
@@ -112,8 +110,8 @@ function mod:Run(amPly, amBoat)
 		local target = tr.Entity
 		local targetAmBoat = AMBoat.GetBoat(target)
 
-		if target and targetAmBoat and targetAmBoat:GetHealth() > 0 and (amBoat:GetEntity():GetPos() - target:GetPos()):LengthSqr() < self.RangeSqr then
-			target.AMBoat:Damage(self.Damage, amBoat:GetEntity())
+		if target and targetAmBoat and targetAmBoat:GetHealth() > 0 and (self.AMBoat:GetEntity():GetPos() - target:GetPos()):LengthSqr() < self.RangeSqr then
+			target.AMBoat:Damage(self.Damage, self.AMBoat:GetEntity())
 			target:EmitSound("flamethrower_hit")
 			self.LastDamage = t
 		end

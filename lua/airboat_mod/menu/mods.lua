@@ -223,7 +223,7 @@ else
 
 	local mod_mt = {
 		__index = function(tab, key)
-			if AMMods.Mods[tab.Name] and AMMods.Mods[tab.Name][key] then
+			if rawget(tab, "Name") and AMMods.Mods[tab.Name] and AMMods.Mods[tab.Name][key] then
 				return AMMods.Mods[tab.Name][key]
 			else
 				return AMMod[key]
@@ -242,26 +242,29 @@ else
 		end
 
 		for key, id in pairs(AMMenu.Settings.Mods) do
-			local mod = AMMods.Mods[id]
+			if id ~= "" then
+				local mod = AMMods.Mods[id]
 
-			if mod then
-				mod.Mount(setmetatable({Name = id}, mod_mt), MENU.Entity)
+				if mod then
+					mod.OnMount(setmetatable({Name = id, MountHolo = MENU.MountHolo}, mod_mt))
+				end
 			end
 		end
 	end
 
-	function MENU.MountHolo(airboat, model, pos, ang, scale, material, color)
+	function MENU.MountHolo(mod, model, pos, ang, scale, material, color)
 		if not color then color = Color(255, 255, 255, 255) end
+		local boat = MENU.Entity
 
-		if IsValid(airboat) then
+		if IsValid(boat) then
 			local ent = ClientsideModel(model)
 
-			ent:SetPos(airboat:LocalToWorld(pos))
-			ent:SetAngles(airboat:LocalToWorldAngles(ang))
+			ent:SetPos(boat:LocalToWorld(pos))
+			ent:SetAngles(boat:LocalToWorldAngles(ang))
 			ent:SetModelScale(scale, 0)
 			ent:SetMaterial(material)
 			ent:SetColor(color)
-		    ent:SetParent(airboat)
+		    ent:SetParent(boat)
 			ent:SetNoDraw(true)
 
 			table.insert(MENU.Props, ent)
