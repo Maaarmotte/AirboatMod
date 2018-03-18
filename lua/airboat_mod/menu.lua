@@ -103,29 +103,25 @@ if SERVER then
 	end)
 
 
-	function AMMenu.Receive.Play(ply, settings)
+	function AMMenu.Receive.Play(ply)
 		local amPly = AMPlayer.GetPlayer(ply)
 		if not amPly then return end
-
-		amPly:SetSettings(settings)
 
 		if not amPly:GetPlaying() or amPly:CanRespawn() then
 			amPly:Spawn()
 		end
 	end
 
-	function AMMenu.Receive.Leave(ply, settings)
+	function AMMenu.Receive.Leave(ply)
 		local amPly = AMPlayer.GetPlayer(ply)
 		if not amPly then return end
 
 		amPly:Leave()
 	end
 
-	function AMMenu.Receive.Respawn(ply, settings)
+	function AMMenu.Receive.Respawn(ply)
 		local amPly = AMPlayer.GetPlayer(ply)
 		if not amPly then return end
-
-		amPly:SetSettings(settings)
 
 		if amPly:IsAlive() then
 			amPly:Suicide()
@@ -330,7 +326,7 @@ else
 		function leaveBtn:DoClick()
 			main:Close()
 
-			AMMenu.Send("Main", "Leave", AMMenu.Settings)
+			AMMenu.Send("Main", "Leave")
 		end
 
 		AMMenu.LeaveButton = leaveBtn
@@ -346,8 +342,7 @@ else
 		function playBtn:DoClick()
 			main:Close()
 
-			AMMenu.Settings.Playing = true
-			AMMenu.Send("Main", "Play", AMMenu.Settings)
+			AMMenu.Send("Main", "Play")
 		end
 
 		AMMenu.PlayButton = playBtn
@@ -364,7 +359,7 @@ else
 		function respawnBtn:DoClick()
 			main:Close()
 
-			AMMenu.Send("Main", "Respawn", AMMenu.Settings)
+			AMMenu.Send("Main", "Respawn")
 		end
 
 		AMMenu.RespawnButton = respawnBtn

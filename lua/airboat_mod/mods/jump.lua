@@ -7,7 +7,6 @@ mod.Type = "space"
 
 
 function mod:Initialize()
-	print("##################################################################################")
 	self.LastJump = 0
 end
 

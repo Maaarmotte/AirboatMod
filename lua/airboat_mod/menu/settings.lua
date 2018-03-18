@@ -1,7 +1,7 @@
 local MENU = {}
 
-MENU.Name = "admin"
-MENU.Title = "Admin"
+MENU.Name = "settings"
+MENU.Title = "Settings"
 MENU.Position = 100
 
 if SERVER then

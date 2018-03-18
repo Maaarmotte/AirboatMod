@@ -6,6 +6,8 @@ MENU.Title = "Mods"
 MENU.Position = 1
 
 if SERVER then
+	MENU.Receive = {}
+
 	function MENU:GetSettings(ply, info)
 		local amPly = AMPlayer.GetPlayer(ply)
 
@@ -17,6 +19,28 @@ if SERVER then
 		info.Mods = mods
 		info.OwnedMods = amPly.OwnedMods
 		info.Color = amPly.Color
+	end
+
+	function MENU.Receive:SetMod(ply, mod)
+		local amPly = AMPlayer.GetPlayer(ply)
+
+		if amPly:IsOwningMod(mod) then
+			amPly:SetMod(mod)
+		end
+	end
+
+	function MENU.Receive:UnsetKey(ply, key)
+		local amPly = AMPlayer.GetPlayer(ply)
+
+		amPly:UnsetKey(key)
+	end
+
+	function MENU.Receive:SetColor(ply, color)
+		local amPly = AMPlayer.GetPlayer(ply)
+
+		if IsColor(color) then
+			amPly.Color = color
+		end
 	end
 else
 	MENU.Props = {}
@@ -160,16 +184,22 @@ else
 					for _, mod in ipairs(settings.OwnedMods) do
 						if AMMods.Mods[mod].Type == key then
 							selectList:AddBut(AMMods.Mods[mod].FullName, nil, function()
+								MENU:Send("SetMod", mod)
+
 								settings.Mods[key] = mod
 								MENU:UpdateModel()
+
 								button:SetText("[" .. nicekey .. "]: " .. AMMods.Mods[mod].FullName)
 							end)
 						end
 					end
 
 					selectList:AddBut("None", nil, function()
+						MENU:Send("UnsetKey", key)
+
 						settings.Mods[key] = ""
 						MENU:UpdateModel()
+
 						button:SetText("[" .. nicekey .. "]: None")
 					end)
 				end)
@@ -198,7 +228,7 @@ else
 		button:SetTall(60)
 		button.DoClick = function()
 			selectList:Open("color", button, function()
-				for _, c in pairs(colors) do
+				for _, color in pairs(colors) do
 					local button = vgui.Create("DButton", selectList)
 					button:Dock(TOP)
 					button:DockMargin(10, 10, 10, 0)
@@ -206,15 +236,17 @@ else
 					button:SetText("")
 
 					function button:Paint(w, h)
-						surface.SetDrawColor(c)
+						surface.SetDrawColor(color)
 						surface.DrawRect(0, 0, w, h)
 					end
 
 					function button:DoClick()
-						modelFrame:SetColor(c)
+						modelFrame:SetColor(color)
 						selectList:Close()
 
-						settings.Color = c
+						settings.Color = color
+
+						MENU:Send("SetColor", color)
 					end
 				end
 			end)
