@@ -38,7 +38,9 @@ if SERVER then
 	function MENU.Receive:SetColor(ply, color)
 		local amPly = AMPlayer.GetPlayer(ply)
 
-		if IsColor(color) then
+		if istable(color) and color.r and color.g and color.b then
+			color.a = 255
+			PrintTable(color)
 			amPly.Color = color
 		end
 	end
@@ -114,8 +116,11 @@ else
 				self:Close()
 			elseif not self.IsOpened then
 				self.IsOpened = name
-				but.Selected = true
-				self.SelectedBut = but
+
+				if but then
+					but.Selected = true
+					self.SelectedBut = but
+				end
 
 				selectList:Clear()
 				selectList:SizeTo(175, selectList:GetTall(), 0.4)
@@ -125,8 +130,11 @@ else
 		end
 
 		function selectList:Close(callback)
-			self.SelectedBut.Selected = nil
-			self.SelectedBut = nil
+			if self.SelectedBut then
+				self.SelectedBut.Selected = nil
+				self.SelectedBut = nil
+			end
+
 			self.IsOpened = nil
 			selectList:SizeTo(0, selectList:GetTall(), 0.4, 0, -1, callback)
 		end
@@ -231,7 +239,7 @@ else
 				for _, color in pairs(colors) do
 					local button = vgui.Create("DButton", selectList)
 					button:Dock(TOP)
-					button:DockMargin(10, 10, 10, 0)
+					button:DockMargin(10, 5, 10, 0)
 					button:SetTall(20)
 					button:SetText("")
 
@@ -248,6 +256,65 @@ else
 
 						MENU:Send("SetColor", color)
 					end
+				end
+
+				local button = vgui.Create("DButton", selectList)
+				button:Dock(TOP)
+				button:DockMargin(10, 10, 10, 0)
+				button:SetTall(20)
+				button:SetText("Custom color")
+				button.Paint = AMMenu.StyleButtonBorder
+				button:SetFont("AM_Text")
+
+				button.DoClick = function()
+					selectList:Open("colopicker", nil, function()
+						local mixer = vgui.Create("DColorMixer", selectList)
+						mixer:Dock(TOP)
+						mixer:SetTall(120)
+						mixer:DockMargin(10, 10, 10, 0)
+						mixer:SetPalette(false)
+						mixer:SetAlphaBar(false)
+						mixer:SetWangs(false)
+
+						mixer.RGB:SetWide(20)
+
+						local button = vgui.Create("DButton", selectList)
+						button:Dock(TOP)
+						button:DockMargin(10, 10, 10, 0)
+						button:SetTall(20)
+						button:SetText("Close")
+						button.Paint = AMMenu.StyleButtonBorder
+						button:SetFont("AM_Text")
+
+						function button:DoClick()
+							selectList:Close()
+						end
+
+						function mixer:ValueChanged(color)
+							color.r = math.Clamp(color.r, 50	, 220)
+							color.g = math.Clamp(color.g, 50	, 220)
+							color.b = math.Clamp(color.b, 50	, 220)
+
+							modelFrame:SetColor(color)
+							settings.Color = color
+						end
+
+						function mixer.HSV:OnMouseReleased(mcode)
+							self:SetDragging(false)
+							self:MouseCapture(false)
+
+							print("ASDFASDFASDFASDFASDF")
+
+							MENU:Send("SetColor", settings.Color)
+						end
+
+						function mixer.RGB:OnMouseReleased(mcode)
+							self:MouseCapture(false)
+							self:OnCursorMoved(self:CursorPos())
+
+							MENU:Send("SetColor", settings.Color)
+						end
+					end)
 				end
 			end)
 		end
