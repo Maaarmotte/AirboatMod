@@ -418,7 +418,7 @@ function AMBoat.CollisionCallback(boat, data)
 	local selfVel = 0
 	local otherVel = 0
 
-	local isWorld = otherEntity:IsWorld() or wotherEntity:GetPersistent()
+	local isWorld = otherEntity:IsWorld() or otherEntity:GetPersistent()
 
 	if isWorld then
 		selfVel = data.OurOldVelocity:Dot(data.HitNormal)
