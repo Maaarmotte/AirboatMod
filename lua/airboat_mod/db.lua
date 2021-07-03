@@ -100,7 +100,8 @@ function AMDatabase.GetSpawns(map)
 				id = tonumber(data.id),
 				enabled = tonumber(data.enabled) == 1,
 				min = Vector(data.minX, data.minY, data.minZ),
-				max = Vector(data.maxX, data.maxY, data.maxZ)
+				max = Vector(data.maxX, data.maxY, data.maxZ),
+				settings = util.JSONToTable(data.settings) or {}
 			})
 		end
 
@@ -108,18 +109,24 @@ function AMDatabase.GetSpawns(map)
 	end)
 end
 
-function AMDatabase.NewSpawn(map, min, max)
+function AMDatabase.NewSpawn(map, min, max, settings)
+	local jsonSettings = util.TableToJSON(settings)
+
 	request([[
 		INSERT INTO
-			AMMod_spawns(map, minX, minY, minZ, maxX, maxY, maxZ)
-			VALUES(%s, %d, %d, %d, %d, %d, %d);]],
-		map, min.x, min.y, min.z, max.x, max.y, max.z)
+			AMMod_spawns(map, minX, minY, minZ, maxX, maxY, maxZ, settings)
+			VALUES(%s, %d, %d, %d, %d, %d, %d, %s);]],
+		map, min.x, min.y, min.z, max.x, max.y, max.z, jsonSettings)
 end
 
-function AMDatabase.EditSpawn(id, min, max)
+function AMDatabase.EditSpawn(id, min, max, settings)
+	local jsonSettings = util.TableToJSON(settings)
+
 	request([[
-		UPDATE AMMod_spawns SET minX = %d, minY = %d, minZ = %d, maxX = %d, maxY = %d, maxZ = %d WHERE id = %d]],
-		min.x, min.y, min.z, max.x, max.y, max.z, id)
+		UPDATE AMMod_spawns
+			SET minX = %d, minY = %d, minZ = %d, maxX = %d, maxY = %d, maxZ = %d, settings = %s
+			WHERE id = %d]],
+		min.x, min.y, min.z, max.x, max.y, max.z, jsonSettings, id)
 end
 
 function AMDatabase.RemoveSpawn(id)
@@ -141,7 +148,8 @@ if not sql.TableExists("AMMod_spawns") then
 			map TEXT,
 			enabled INTEGER DEFAULT 1,
 			minX INTEGER, minY INTEGER, minZ INTEGER,
-			maxX INTEGER, maxY INTEGER, maxZ INTEGER
+			maxX INTEGER, maxY INTEGER, maxZ INTEGER,
+			settings TEXT DEFAULT "{}"
 		)]])
 
 	AMDatabase.NewSpawn("gm_construct_flatgrass_v6-2", Vector(12607, -7303, -507), Vector(7220, -3177, -168))

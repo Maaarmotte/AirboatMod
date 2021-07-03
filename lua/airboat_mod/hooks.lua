@@ -79,3 +79,8 @@ hook.Add("CanPlayerSuicide", "AirboatMod", function(ply)
 		return false
 	end
 end)
+
+
+hook.Add("InitPostEntity", "AirboatMod.UpdateSpawns", function()
+	AMSpawn.Update()	
+end)
