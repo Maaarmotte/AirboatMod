@@ -418,7 +418,9 @@ function AMBoat.CollisionCallback(boat, data)
 	local selfVel = 0
 	local otherVel = 0
 
-	if otherEntity:IsWorld() then
+	local isWorld = otherEntity:IsWorld() or wotherEntity:GetPersistent()
+
+	if isWorld then
 		selfVel = data.OurOldVelocity:Dot(data.HitNormal)
 	elseif other and otherEntity:IsValid() and other:IsPlaying() then
 		local collisionAxis = (boat:LocalToWorld(boat:OBBCenter()) - otherEntity:LocalToWorld(otherEntity:OBBCenter())):GetNormalized()
@@ -428,7 +430,7 @@ function AMBoat.CollisionCallback(boat, data)
 
 	-- Apply the damage if the velocity is big enough
 	if math.max(selfVel, otherVel) > 500 then
-		if otherEntity:IsWorld() then
+		if isWorld then
 			self:Damage(5, otherEntity)
 			self.LastBump = CurTime()
 		else
