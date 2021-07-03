@@ -248,7 +248,7 @@ else
 		main:SetSize(AMMenu.SizeX, AMMenu.SizeY)
 		main:Center()
 		main:SetTitle("")
-		main:SetDraggable(false)
+		main:SetDraggable(true)
 		main:SetDeleteOnClose(true)
 		main:MakePopup()
 		main:ShowCloseButton(false)
@@ -265,6 +265,14 @@ else
 		header.Paint = function(self, w, h)
 			surface.SetDrawColor(28, 33, 44, 255)
 			surface.DrawRect(0, 0, w, h)
+		end
+
+		function header:OnMousePressed()
+			main:OnMousePressed()
+		end
+
+		function header:OnMouseReleased()
+			main:OnMouseReleased()
 		end
 
 		local closeBtn = vgui.Create("DButton", header)
@@ -321,7 +329,7 @@ else
 		leaveBtn:SetText("Leave")
 		leaveBtn:SetWide(100)
 		leaveBtn:SetFont("AM_Title")
-		leaveBtn:SetEnabled(AMMenu.LeaveButtonEnable)
+		leaveBtn:SetVisible(AMMenu.LeaveButtonEnable)
 		leaveBtn.Paint = AMMenu.StyleButtonLight
 		function leaveBtn:DoClick()
 			main:Close()
@@ -337,7 +345,7 @@ else
 		playBtn:SetText("Play")
 		playBtn:SetWide(100)
 		playBtn:SetFont("AM_Title")
-		playBtn:SetEnabled(AMMenu.PlayButtonEnabled)
+		playBtn:SetVisible(AMMenu.PlayButtonEnabled)
 		playBtn.Paint = AMMenu.StyleButtonLight
 		function playBtn:DoClick()
 			main:Close()
@@ -354,7 +362,7 @@ else
 		respawnBtn:SetText("Suicide")
 		respawnBtn:SetWide(100)
 		respawnBtn:SetFont("AM_Title")
-		respawnBtn:SetEnabled(AMMenu.RespawnButtonEnabled)
+		respawnBtn:SetVisible(AMMenu.RespawnButtonEnabled)
 		respawnBtn.Paint = AMMenu.StyleButtonLight
 		function respawnBtn:DoClick()
 			main:Close()
@@ -368,7 +376,7 @@ else
 		credit:Dock(FILL)
 		credit:DockMargin(5, 23, 5 ,5)
 		credit:SetFont("AM_SmallText")
-		credit:SetText("Developed by Marmotte, Sir Papate, sirious and mandrac.")
+		credit:SetText("Developed by Marmotte, Sir Papate and sirious.")
 		credit:SetTextColor(Color(255, 255, 255, 50))
 	end
 
@@ -433,9 +441,9 @@ else
 			AMMenu.LeaveButtonEnable = true
 
 			if IsValid(AMMenu.MainFrame) then
-				AMMenu.PlayButton:SetEnabled(false)
-				AMMenu.RespawnButton:SetEnabled(true)
-				AMMenu.LeaveButton:SetEnabled(true)
+				AMMenu.PlayButton:SetVisible(false)
+				AMMenu.RespawnButton:SetVisible(true)
+				AMMenu.LeaveButton:SetVisible(true)
 			end
 		elseif status == "suicide" then
 			AMMenu.PlayButtonEnabled = false
@@ -443,9 +451,9 @@ else
 			AMMenu.LeaveButtonEnable = true
 
 			if IsValid(AMMenu.MainFrame) then
-				AMMenu.PlayButton:SetEnabled(false)
-				AMMenu.RespawnButton:SetEnabled(false)
-				AMMenu.LeaveButton:SetEnabled(true)
+				AMMenu.PlayButton:SetVisible(false)
+				AMMenu.RespawnButton:SetVisible(false)
+				AMMenu.LeaveButton:SetVisible(true)
 			end
 		elseif status == "dead" then
 			AMMenu.PlayButtonEnabled = info.CanRespawn
@@ -453,9 +461,9 @@ else
 			AMMenu.LeaveButtonEnable = true
 
 			if IsValid(AMMenu.MainFrame) then
-				AMMenu.PlayButton:SetEnabled(info.CanRespawn)
-				AMMenu.RespawnButton:SetEnabled(false)
-				AMMenu.LeaveButton:SetEnabled(true)
+				AMMenu.PlayButton:SetVisible(info.CanRespawn)
+				AMMenu.RespawnButton:SetVisible(false)
+				AMMenu.LeaveButton:SetVisible(true)
 			end
 		elseif status == "notplaying" then
 			AMMenu.PlayButtonEnabled = true
@@ -463,9 +471,9 @@ else
 			AMMenu.LeaveButtonEnable = false
 
 			if IsValid(AMMenu.MainFrame) then
-				AMMenu.PlayButton:SetEnabled(true)
-				AMMenu.RespawnButton:SetEnabled(false)
-				AMMenu.LeaveButton:SetEnabled(false)
+				AMMenu.PlayButton:SetVisible(true)
+				AMMenu.RespawnButton:SetVisible(false)
+				AMMenu.LeaveButton:SetVisible(false)
 			end
 		end
 	end
