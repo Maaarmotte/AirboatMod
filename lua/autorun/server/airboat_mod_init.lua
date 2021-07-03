@@ -41,5 +41,3 @@ end
 for _, f in pairs(file.Find("airboat_mod/powerups/*.lua", "LUA")) do
 	include("airboat_mod/powerups/" .. f)
 end
-
-PrintMessage(HUD_PRINTTALK, "-> AirBoat mod loaded!")
