@@ -19,14 +19,14 @@ AMMods.Mods = {}
 
 -- Run the files
 include("airboat_mod/utils.lua")
-include("airboat_mod/main.lua")
-include("airboat_mod/hooks.lua")
-include("airboat_mod/boat.lua")
-include("airboat_mod/player.lua")
+include("airboat_mod/sv_main.lua")
+include("airboat_mod/sv_hooks.lua")
+include("airboat_mod/sv_boat.lua")
+include("airboat_mod/sv_player.lua")
+include("airboat_mod/sv_db.lua")
+include("airboat_mod/sv_spawn.lua")
 include("airboat_mod/menu.lua")
 include("airboat_mod/mods.lua")
-include("airboat_mod/db.lua")
-include("airboat_mod/spawn.lua")
 
 local files, folders = file.Find("airboat_mod/mods/*", "LUA")
 for _, folderName in pairs(folders) do
