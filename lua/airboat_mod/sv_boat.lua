@@ -373,20 +373,21 @@ function AMBoat:OnDeath(attacker)
 
 	-- Update score
 	if IsValid(ply) then
-		AMDatabase.IncPlayerScore(ply, "deaths")
+		amPly:IncrementDeath()
 
 		if other then
-			local otherPly = other:GetPlayer():GetEntity()
+			local otherAmPly = other:GetPlayer()
+			local otherPly = otherAmPly:GetEntity()
 
-			AMDatabase.IncPlayerScore(otherPly, "kills")
+			otherAmPly:IncrementKill()
 
 			if LogBox then
-				LogBox:Broadcast(team.GetColor(otherPly:Team()), otherPly:Name() .. " (" .. AMDatabase.GetPlayerScore(otherPly, "kills") .. ")",
-					Color(255, 255, 255), " completely destroyed ", team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")")
+				LogBox:Broadcast(team.GetColor(otherPly:Team()), otherPly:Name() .. " (" .. otherAmPly:GetKills() .. ")",
+					Color(255, 255, 255), " completely destroyed ", team.GetColor(ply:Team()), ply:Name() .. " (" .. amPlay:GetKills() .. ")")
 			end
 		else
 			if LogBox then
-				LogBox:Broadcast(team.GetColor(ply:Team()), ply:Name() .. " (" .. AMDatabase.GetPlayerScore(ply, "kills") .. ")",
+				LogBox:Broadcast(team.GetColor(ply:Team()), ply:Name() .. " (" .. amPlay:GetKills() .. ")",
 					Color(255, 255, 255), " crushed himself into a wall !")
 			end
 		end

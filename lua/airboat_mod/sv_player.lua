@@ -1,20 +1,32 @@
 AMPlayer = {}
 AMPlayer_mt = {__index = function(tab, key) return AMPlayer[key] end}
 
+AMPlayer.DefaultMods = { shift="boost", space="jump", mouse1="", skin="" }
+AMPlayer.DefaultOwnedMods = { shift="boost", space="jump", mouse1="", skin="" }
+
 -- Constructor
 function AMPlayer.New(ply)
 	local self = {}
 	setmetatable(self, AMPlayer_mt)
 
+	self.Settings = AMDatabase.Player.FindOrCreate(ply)
+
 	self.Entity = ply
 	self.AMBoat = nil
+	
+	self.Mods = table.Merge(table.Copy(AMPlayer.DefaultMods), self.Settings.mods)
+	self.OwnedMods = { "boost", "jump", "boost2", "flamethrower", "freezer", "cage", "bathroom", "combine" }
+	self.Color = self.Settings.color
+	
+	self.Points = self.Settings.points
+	self.Kills = 0
+	self.Deaths = 0
+	
 	self.Health = 15
 	self.Playing = false
-	self.Mods = {shift="boost", space="jump", mouse1=""}
-	self.OwnedMods = { "boost", "jump", "boost2", "flamethrower", "freezer", "cage", "bathroom", "combine" }
-	self.Score = 0
-	self.Color = Color(196, 185, 155)
 	self.Alive = false
+
+	self.playTimeReference = nil
 
 	ply.AMPlayer = self
 
@@ -58,6 +70,19 @@ end
 
 function AMPlayer:SetPlaying(value)
 	self.Playing = value
+
+	if value then
+		self.playTimeReference = CurTime()
+	else
+		local timePlayed = CurTime() - self.playTimeReference
+		self.playTimeReference = null
+
+		self.Settings.playTime = self.Settings.playTime + timePlayed
+
+		self:Update({
+			playTime = self.Settings.playTime
+		})
+	end
 end
 
 function AMPlayer:GetPlaying()
@@ -133,9 +158,25 @@ function AMPlayer:SetMod(modid)
 
 	if self:IsOwningMod(modid) then
 		self.Mods[mod.Type] = modid
+		self.Settings.mods = self.Mods
+
+		self:Update({
+			mods = self.Mods
+		})
 	else
 		print("[AM] Player " .. self.Entity:Name() .. " doesn't have access to " .. modid)
 	end
+end
+
+function AMPlayer:SetColor(color)
+	color.a = 255
+
+	self.Color = color
+	self.Settings.color = color
+
+	self:Update({
+		color = self.Color
+	})
 end
 
 function AMPlayer:UnsetKey(key)
@@ -215,4 +256,27 @@ function AMPlayer:CancelSuicide()
 	self.WantToDie = false
 
 	AMMenu.Send(ply, "Main", "SetStatus", "playing", {})
+end
+
+function AMPlayer:IncrementKill()
+	self.Kills = self.Kills + 1
+	self.Settings.kills = self.Settings.kills + 1
+
+	self:Update({
+		kills = self.Settings.kills
+	})
+end
+
+function AMPlayer:IncrementDeath()
+	self.Deaths = self.Deaths + 1
+	self.Settings.deaths = self.Settings.deaths + 1
+
+	self:Update({
+		deaths = self.Settings.deaths
+	})
+end
+
+
+function AMPlayer:Update(values)
+	AMDatabase.Player.Update(self.Entity:SteamID(), values)
 end

@@ -39,9 +39,7 @@ if SERVER then
 		local amPly = AMPlayer.GetPlayer(ply)
 
 		if istable(color) and color.r and color.g and color.b then
-			color.a = 255
-			PrintTable(color)
-			amPly.Color = color
+			amPly:SetColor(color)
 		end
 	end
 else

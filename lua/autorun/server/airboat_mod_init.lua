@@ -18,12 +18,17 @@ AMMods = {}
 AMMods.Mods = {}
 
 -- Run the files
+include("airboat_mod/sv_db.lua")
+
+for _, fileName in pairs(file.Find("airboat_mod/dto/*.lua", "LUA")) do
+	include("airboat_mod/dto/" .. fileName)
+end
+
 include("airboat_mod/utils.lua")
 include("airboat_mod/sv_main.lua")
 include("airboat_mod/sv_hooks.lua")
 include("airboat_mod/sv_boat.lua")
 include("airboat_mod/sv_player.lua")
-include("airboat_mod/sv_db.lua")
 include("airboat_mod/sv_spawn.lua")
 include("airboat_mod/menu.lua")
 include("airboat_mod/mods.lua")

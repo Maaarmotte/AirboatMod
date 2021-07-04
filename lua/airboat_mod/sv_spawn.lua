@@ -3,7 +3,7 @@ AMSpawns = {}
 AMSpawnsPowerUps = AMSpawnsPowerUps or {}
 
 function AMSpawn.Update()
-	AMSpawns = AMDatabase.GetSpawns(game.GetMap())
+	AMSpawns = AMDatabase.Spawn.FindByMap(game.GetMap())
 
 	for k, spawn in pairs(AMSpawns) do
 		AMSpawn.Prepare(spawn)
@@ -19,21 +19,30 @@ function AMSpawn.GetByID(id)
 end
 
 function AMSpawn.New(min, max, settings)
-	AMDatabase.NewSpawn(game.GetMap(), min, max, settings)
+	AMDatabase.Spawn.Create({
+		map = game.GetMap(),
+		min = min,
+		max = max,
+		settings = settings
+	})
 	AMSpawn.Update()
 
 	return AMSpawns[#AMSpawns]
 end
 
 function AMSpawn.Edit(id, min, max, settings)
-	AMDatabase.EditSpawn(id, min, max, settings)
+	AMDatabase.Spawn.Update(id, {
+		min = min,
+		max = max,
+		settings = settings
+	})
 	AMSpawn.Update()
 
 	return AMSpawn.GetByID(id)
 end
 
 function AMSpawn.Enable(id, enable)
-	AMDatabase.EnableSpawn(id, enable)
+	AMDatabase.Spawn.Enable(id, enable)
 	AMSpawn.Update()
 
 	return AMSpawn.GetByID(id)
@@ -42,7 +51,7 @@ end
 function AMSpawn.Remove(id)
 	AMSpawn.Clean(id)
 
-	AMDatabase.RemoveSpawn(id)
+	AMDatabase.Spawn.Delete(id)
 	AMSpawn.Update()
 end
 
