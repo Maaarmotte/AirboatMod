@@ -58,8 +58,6 @@ function mod:Run()
 	pumpkin:GetPhysicsObject():SetVelocity(ent:GetVelocity() + ent:GetForward()*2000)
 	pumpkin.AMBoatOwner = self.AMBoat
 
-	print("Et c'est la courge!")
-
 	ent:EmitSound("misc/halloween/spelltick_01.wav")
 
 	self.AMBoat:UnmountPowerUp()

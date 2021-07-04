@@ -242,8 +242,6 @@ else
 			end
 
 			function list:AddSpawn(spawn)
-				PrintTable(spawn)
-
 				local fram = list:Add("DCollapsibleCategory")
 				fram:Dock(TOP)
 				fram:DockMargin(3, 3, 3, 0)

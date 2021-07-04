@@ -190,7 +190,6 @@ else
 			button.DoClick = function()
 				selectList:Open(key, button, function()
 					for _, mod in ipairs(settings.OwnedMods) do
-						print(AMMods.Mods[mod].FullName, AMMods.Mods[mod].Type, key)
 						if AMMods.Mods[mod].Type == key then
 							selectList:AddBut(AMMods.Mods[mod].FullName, nil, function()
 								MENU:Send("SetMod", mod)
@@ -303,8 +302,6 @@ else
 						function mixer.HSV:OnMouseReleased(mcode)
 							self:SetDragging(false)
 							self:MouseCapture(false)
-
-							print("ASDFASDFASDFASDFASDF")
 
 							MENU:Send("SetColor", settings.Color)
 						end

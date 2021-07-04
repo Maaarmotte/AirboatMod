@@ -23,5 +23,4 @@ end
 function mod:Run()
 end
 
-print("test")
 AMMods.Register(mod)

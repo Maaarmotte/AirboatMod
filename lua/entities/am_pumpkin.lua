@@ -43,7 +43,6 @@ if SERVER then
         amBoat:EmitSound("misc/banana_slip.wav")
 	end
 
-	print("testsetest")
 	function ENT:PhysicsCollide(colData, physobj)
 		local ent = colData.HitEntity
 
@@ -59,8 +58,6 @@ if SERVER then
 			self:SetNoDraw(true)
 
 			ent.AMBoat:Damage(5, self.AMBoatOwner)
-
-			print("La courge dans ta gueule")
 
 			timer.Simple(delay*repetitions+1, function() self:Remove() end)
 			--warning from console : Changing collision rules within a callback is likely to cause crashes!
