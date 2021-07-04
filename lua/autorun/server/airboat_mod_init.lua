@@ -28,9 +28,12 @@ include("airboat_mod/mods.lua")
 include("airboat_mod/db.lua")
 include("airboat_mod/spawn.lua")
 
-for _, f in pairs(file.Find("airboat_mod/mods/*.lua", "LUA")) do
-	AddCSLuaFile("airboat_mod/mods/" .. f)
-	include("airboat_mod/mods/" .. f)
+local files, folders = file.Find("airboat_mod/mods/*", "LUA")
+for _, folderName in pairs(folders) do
+	for _, fileName in pairs(file.Find("airboat_mod/mods/" .. folderName .. "/*.lua", "LUA")) do
+		AddCSLuaFile("airboat_mod/mods/" .. folderName .. "/" .. fileName)
+		include("airboat_mod/mods/" .. folderName .. "/" .. fileName)
+	end
 end
 
 for _, f in pairs(file.Find("airboat_mod/menu/*.lua", "LUA")) do

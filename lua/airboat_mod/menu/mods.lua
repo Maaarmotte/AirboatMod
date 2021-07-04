@@ -175,7 +175,7 @@ else
 			title:SetFont("AM_LargeText")
 		end
 
-		for _, nicekey in pairs({"Shift", "Space", "Mouse1"}) do
+		for _, nicekey in pairs({"Shift", "Space", "Mouse1", "Skin"}) do
 			local key = string.lower(nicekey)
 
 			local button = vgui.Create("DButton", optionList)
@@ -190,6 +190,7 @@ else
 			button.DoClick = function()
 				selectList:Open(key, button, function()
 					for _, mod in ipairs(settings.OwnedMods) do
+						print(AMMods.Mods[mod].FullName, AMMods.Mods[mod].Type, key)
 						if AMMods.Mods[mod].Type == key then
 							selectList:AddBut(AMMods.Mods[mod].FullName, nil, function()
 								MENU:Send("SetMod", mod)
@@ -360,7 +361,14 @@ else
 
 			ent:SetPos(boat:LocalToWorld(pos))
 			ent:SetAngles(boat:LocalToWorldAngles(ang))
-			ent:SetModelScale(scale, 0)
+
+			-- ent:SetModelScale(scale, 0)			
+			local scaleMat = isnumber(scale) and Vector(scale, scale, scale) or scale
+			local mat = Matrix()
+			mat:Scale(scaleMat)
+			ent:EnableMatrix("RenderMultiply", mat)
+
+
 			ent:SetMaterial(material)
 			ent:SetColor(color)
 		    ent:SetParent(boat)

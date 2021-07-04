@@ -11,7 +11,7 @@ function AMPlayer.New(ply)
 	self.Health = 15
 	self.Playing = false
 	self.Mods = {shift="boost", space="jump", mouse1=""}
-	self.OwnedMods = { "boost", "jump", "boost2", "flamethrower", "freezer" }
+	self.OwnedMods = { "boost", "jump", "boost2", "flamethrower", "freezer", "cage", "bathroom", "combine" }
 	self.Score = 0
 	self.Color = Color(196, 185, 155)
 	self.Alive = false
