@@ -20,8 +20,8 @@ AMMods.Mods = {}
 -- Run the files
 include("airboat_mod/sv_db.lua")
 
-for _, fileName in pairs(file.Find("airboat_mod/dto/*.lua", "LUA")) do
-	include("airboat_mod/dto/" .. fileName)
+for _, fileName in pairs(file.Find("airboat_mod/repository/*.lua", "LUA")) do
+	include("airboat_mod/repository/" .. fileName)
 end
 
 include("airboat_mod/utils.lua")
