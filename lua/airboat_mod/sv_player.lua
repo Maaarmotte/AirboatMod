@@ -11,7 +11,7 @@ function AMPlayer.New(ply)
 
 	local playerInfo = AMDatabase.Player.FindOrCreate(ply)
 
-	if playerInfo.name ~= self:Name() then
+	if playerInfo.name ~= ply:Name() then
 		self:Update({
 			name = self:Name()
 		})
