@@ -227,6 +227,8 @@ function AMPlayer:Kill()
 
 	AMMenu.Send(ply, "Main", "SetStatus", "dead", {RespawnTime = AMMain.RespawnTime, CanRespawn = false})
 
+    AMScoreBoard.SendScoreboardUpdate()
+
 	timer.Simple(AMMain.RespawnTime, function()
 		if self:GetPlaying() then
 			AMMenu.Send(ply, "Main", "SetStatus", "dead", {RespawnTime = 0, CanRespawn = self:CanRespawn()})
