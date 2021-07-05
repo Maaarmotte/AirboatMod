@@ -27,3 +27,16 @@ function AMMain.IsPlayerAdmin(ply)
 	-- return ply and ply:IsAdmin()
 	return true
 end
+
+function AMMain.GetAllPlayers()
+    local players = {}
+    for i, ply in ipairs(player.GetAll()) do
+        if ply and ply:IsValid() then
+            local amPly = AMPlayer.GetPlayer(ply)
+            if amPly:GetPlaying() then
+                table.insert(players, amPly)
+            end
+        end
+    end
+    return players
+end

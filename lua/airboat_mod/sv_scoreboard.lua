@@ -1,22 +1,20 @@
 util.AddNetworkString("AirboatMod.Scoreboard.Update")
 
-AMScoreBoard = AMScoreBoard or {}
+AMScoreboard = AMScoreboard or {}
 
-function AMScoreBoard.SendScoreboardUpdate(ply)		
+function AMScoreboard.SendScoreboardUpdate(ply)		
 	net.Start("AirboatMod.Scoreboard.Update")
-		local data = AMDatabase.Player.FindLeaderboard()
-		
 		local leaderboard = {}
-		for i, p in ipairs(data) do
+		for i, p in ipairs(AMDatabase.Player.FindLeaderboard()) do
 			table.insert(leaderboard, {name=p.name, score=p.kills})	
 		end
 		net.WriteTable(leaderboard)
 		
-		net.WriteTable({
-			{name="Marmotte", score=14},
-			{name="Un jour je serai le meilleur dresseur !", score=10},
-            {name="Still under development :(", score=1}
-		})
+        local scoreboard = {}
+        for i, p in ipairs(AMDatabase.Player.FindScoreboard(AMMain.GetAllPlayers())) do
+            table.insert(scoreboard, {name=p.name, score=p.kills})
+        end
+		net.WriteTable(scoreboard)
 	if ply and ply:IsValid() then
 		net.Send(ply)
 	else
@@ -25,5 +23,5 @@ function AMScoreBoard.SendScoreboardUpdate(ply)
 end
 
 hook.Add("PlayerInitialSpawn", "AirboatMod.Scoreboard.PlayerInitialSpawn", function(ply)
-	AMScoreBoard.SendScoreboardUpdate(ply)
+	AMScoreboard.SendScoreboardUpdate(ply)
 end)

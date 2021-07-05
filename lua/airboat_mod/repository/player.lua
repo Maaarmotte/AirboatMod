@@ -74,6 +74,37 @@ function Player.FindLeaderboard()
     end)
 end
 
+function Player.FindScoreboard(amPlys)
+    if #amPlys == 0 then
+        return {}
+    end
+
+    local steamIds = {}
+    for _, p in ipairs(amPlys) do
+        local ply = p:GetEntity()
+
+        if ply and ply:IsValid() then
+            table.insert(steamIds, ply:SteamID())
+        end
+    end
+    local steamIdsString = table.concat(steamIds, ",")
+
+    return AMDatabase.request([[
+        SELECT * FROM %s
+            WHERE steamid IN (%s)
+            ORDER BY kills desc
+            LIMIT %d;
+    ]], Player.TABLE, steamIdsString, 10, function(rep)
+        local players = {}
+
+        for _, data in pairs(rep or {}) do
+            table.insert(players, Player.Build(data))
+        end
+
+        return players
+    end)
+end
+
 function Player.FindOrCreate(gmPly)
     local ply = Player.FindBySteamId(gmPly:SteamID())
 

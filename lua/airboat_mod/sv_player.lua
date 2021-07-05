@@ -134,6 +134,8 @@ function AMPlayer:Spawn()
 	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, boat, 0)
 
 	amBoat:Spawn()
+
+    AMScoreboard.SendScoreboardUpdate()
 end
 
 function AMPlayer:CanRespawn()
@@ -198,6 +200,8 @@ function AMPlayer:Leave()
 			self.Entity:Spawn()
 
 			self:GetAirboat():Synchronize()
+
+            AMScoreboard.SendScoreboardUpdate()
 		end
 	end
 end
@@ -227,7 +231,7 @@ function AMPlayer:Kill()
 
 	AMMenu.Send(ply, "Main", "SetStatus", "dead", {RespawnTime = AMMain.RespawnTime, CanRespawn = false})
 
-    AMScoreBoard.SendScoreboardUpdate()
+    AMScoreboard.SendScoreboardUpdate()
 
 	timer.Simple(AMMain.RespawnTime, function()
 		if self:GetPlaying() then
