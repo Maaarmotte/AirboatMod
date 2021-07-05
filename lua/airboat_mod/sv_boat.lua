@@ -4,6 +4,9 @@ util.AddNetworkString("am_boat_update")
 AMBoat = {}
 AMBoat_mt = {__index = function(tab, key) return AMBoat[key] end}
 
+AMBoat.LastTouchedDelayForKill = 2.5
+AMBoat.InvulnerableTimeAfterDamage = 0.5
+
 -- Constructor
 function AMBoat.New()
 	local self = {}
@@ -13,10 +16,13 @@ function AMBoat.New()
 	self.Mods = {}
 	self.Weapons = {}
 	self.SmokeEntity = nil
-	self.LastBump = 0
+	self.InvulnerableUntil = 0
 	self.Health = 15
 	setmetatable(self, AMBoat_mt)
 
+	self.LastTouchedTime = nil
+	self.LastTouchedBoat = nil
+	
 	return self
 end
 
@@ -308,10 +314,10 @@ function AMBoat:AddInvulnerableTime(value, transparendEffect)
 	if not IsValid(self.Entity) then return end
 	transparendEffect = true
 
-	self.LastBump = CurTime() + value
+	self.InvulnerableUntil = CurTime() + value
 
 	local color = self.Entity:GetColor()
-	
+
 	if transparendEffect then
 		self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
 
@@ -373,6 +379,10 @@ function AMBoat:OnDeath(attacker)
 	-- Play effects and sounds
 	local other = AMBoat.GetBoat(attacker)
 
+	if not other and self.LastTouchedBoat and self.LastTouchedBoat:IsPlaying() and CurTime() - self.LastTouchedTime < AMBoat.LastTouchedDelayForKill then
+		other = self.LastTouchedBoat
+	end
+
 	if other and other:IsPlaying() then
 		other:GetEntity():EmitSound("ambient/bumper_car_cheer" .. math.random(3) .. ".wav")
 		timer.Simple(1, function() other:GetEntity():EmitSound("items/samurai/tf_conch.wav") end)
@@ -423,7 +433,7 @@ function AMBoat.CollisionCallback(boat, data)
 	if not self or not boat:IsValid() or not self:IsPlaying() then return end
 
 	-- Don't take too much collisions at the same time
-	if CurTime() - self.LastBump < 0.5 then return end
+	if CurTime() < self.InvulnerableUntil then return end
 
 	-- Retrieve the entity hit and try to retrieve its boat structure
 	local otherEntity = data.HitEntity
@@ -441,13 +451,16 @@ function AMBoat.CollisionCallback(boat, data)
 		local collisionAxis = (boat:LocalToWorld(boat:OBBCenter()) - otherEntity:LocalToWorld(otherEntity:OBBCenter())):GetNormalized()
 		selfVel = data.OurOldVelocity:Dot(collisionAxis)
 		otherVel = data.TheirOldVelocity:Dot(collisionAxis)
+
+		self.LastTouchedTime = CurTime()
+		self.LastTouchedBoat = other
 	end
 
 	-- Apply the damage if the velocity is big enough
 	if math.max(selfVel, otherVel) > 500 then
 		if isWorld then
 			self:Damage(5, otherEntity)
-			self.LastBump = CurTime()
+			self:AddInvulnerableTime(AMBoat.InvulnerableTimeAfterDamage)
 		else
 			if selfVel > otherVel then
 				self:Damage(1, otherEntity)
@@ -455,14 +468,15 @@ function AMBoat.CollisionCallback(boat, data)
 			else
 				self:Damage(5, otherEntity)
 				other:Damage(1, boat)
-
-				-- Add a small invulnerability time if hitam_boat_update
-				self.LastBump = CurTime()
-				other.LastBump = CurTime()
-
-				otherEntity:EmitSound("weapons/bumper_car_hit" .. math.random(1, 8) .. ".wav")
 			end
+
+			-- Add a small invulnerability time if hitam_boat_update
+			self:AddInvulnerableTime(AMBoat.InvulnerableTimeAfterDamage)
+			other:AddInvulnerableTime(AMBoat.InvulnerableTimeAfterDamage)
+
+			otherEntity:EmitSound("weapons/bumper_car_hit" .. math.random(1, 8) .. ".wav")
 		end
+		
 		boat:EmitSound("weapons/bumper_car_hit" .. math.random(1, 8) .. ".wav")
 	end
 end
