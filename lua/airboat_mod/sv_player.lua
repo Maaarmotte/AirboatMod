@@ -145,6 +145,7 @@ function AMPlayer:Spawn()
 	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, boat, 0)
 
 	amBoat:Spawn()
+    AMScoreboard.SendScoreboardUpdate()
 end
 
 function AMPlayer:CanRespawn()
