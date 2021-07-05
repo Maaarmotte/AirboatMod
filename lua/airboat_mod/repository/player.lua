@@ -87,14 +87,14 @@ function Player.FindScoreboard(amPlys)
             table.insert(steamIds, ply:SteamID())
         end
     end
-    local steamIdsString = table.concat(steamIds, ",")
+    local steamIdsString = "'" .. table.concat(steamIds, "','") .. "'"
 
     return AMDatabase.request([[
         SELECT * FROM %s
-            WHERE steamid IN (%s)
+            WHERE steamid IN (]] .. steamIdsString .. [[)
             ORDER BY kills desc
             LIMIT %d;
-    ]], Player.TABLE, steamIdsString, 10, function(rep)
+    ]], Player.TABLE, 10, function(rep)
         local players = {}
 
         for _, data in pairs(rep or {}) do

@@ -70,7 +70,7 @@ net.Receive("AirboatMod.Scoreboard.Update", function(len)
 			maxScoresSize = scoreSize
 		end
 		
-		table.insert(scoreboardNames, {text=name, size=size})
+		table.insert(scoreboardNames, {text=name, size=nameSize})
 		table.insert(scoreboardPoints, {text=score, size=scoreSize})
 	end		
 end)
