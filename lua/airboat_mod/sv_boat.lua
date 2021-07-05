@@ -326,7 +326,7 @@ function AMBoat:AddInvulnerableTime(value, transparendEffect)
 	end
 
 	timer.Create("invul" .. self.Entity:EntIndex(), value, 1, function()
-		if not IsValid(self.Entity) and self:IsAlive() then return end
+		if not IsValid(self.Entity) or self:IsAlive() then return end
 
 		color.a = 255
 		self.Entity:SetColor(color)
