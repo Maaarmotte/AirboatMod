@@ -326,7 +326,7 @@ function AMBoat:AddInvulnerableTime(value, transparendEffect)
 	end
 
 	timer.Create("invul" .. self.Entity:EntIndex(), value, 1, function()
-		if not IsValid(self.Entity) then return end
+		if not IsValid(self.Entity) and self:IsAlive() then return end
 
 		color.a = 255
 		self.Entity:SetColor(color)
@@ -482,8 +482,9 @@ function AMBoat.CollisionCallback(boat, data)
 		
 		boat:EmitSound("weapons/bumper_car_hit" .. math.random(1, 8) .. ".wav")
 	end
+end
 
-	function AMBoat:IsAlive()
-		return self:GetPlayer() and self:GetPlayer():IsAlive()
-	end
+function AMBoat:IsAlive()
+	print(self:GetPlayer():GetEntity():Name(), self:GetPlayer():IsAlive())
+	return self:GetPlayer() and self:GetPlayer():IsAlive()
 end
