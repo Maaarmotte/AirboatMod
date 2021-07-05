@@ -56,7 +56,7 @@ function mod:Run()
 	physobj:SetVelocity(boat:GetVelocity() + boat:GetForward()*1000)
 	boat:EmitSound("weapons/bumper_car_speed_boost_start.wav")
 
-	boat:AddInvulnerableTime(0.5, false)
+	self.AMBoat:AddInvulnerableTime(0.5, false)
 
 	if self.Amount <= 0 then
 		self.AMBoat:UnmountPowerUp()
