@@ -3,7 +3,7 @@
 ### Hooks
 
 -   AirboatMod.PostPlayerSpawn(ply)
--   AirboatMod.PostPlayerLeave(ply)
+-   AirboatMod.PostPlayerLeft(ply)
 -   AirboatMod.PostPlayerDeath(ply)
 
 [UPGRADES]
