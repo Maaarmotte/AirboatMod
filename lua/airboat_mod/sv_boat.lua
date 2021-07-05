@@ -304,17 +304,23 @@ function AMBoat:Damage(amount, attacker)
 	end
 end
 
-function AMBoat:AddInvulnerableTime(value)
+function AMBoat:AddInvulnerableTime(value, transparendEffect)
 	if not IsValid(self.Entity) then return end
-	self.LastBump = CurTime() + value
-	self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
+	transparendEffect = true
 
-	local color = self.Entity:GetColor()
-	color.a = 100
-	self.Entity:SetColor(color)
+	self.LastBump = CurTime() + value
+
+	if transparendEffect then
+		self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
+
+		local color = self.Entity:GetColor()
+		color.a = 100
+		self.Entity:SetColor(color)
+	end
 
 	timer.Create("invul" .. self.Entity:EntIndex(), value, 1, function()
 		if not IsValid(self.Entity) then return end
+		
 		color.a = 255
 		self.Entity:SetColor(color)
 	end)
