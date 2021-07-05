@@ -25,5 +25,5 @@ function AMScoreBoard.SendScoreboardUpdate(ply)
 end
 
 hook.Add("PlayerInitialSpawn", "AirboatMod.Scoreboard.PlayerInitialSpawn", function(ply)
-	sendScoreboardUpdate(ply)
+	AMScoreBoard.SendScoreboardUpdate(ply)
 end)
