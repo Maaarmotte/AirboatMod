@@ -310,17 +310,18 @@ function AMBoat:AddInvulnerableTime(value, transparendEffect)
 
 	self.LastBump = CurTime() + value
 
+	local color = self.Entity:GetColor()
+	
 	if transparendEffect then
 		self.Entity:SetRenderMode(RENDERMODE_TRANSALPHA)
 
-		local color = self.Entity:GetColor()
 		color.a = 100
 		self.Entity:SetColor(color)
 	end
 
 	timer.Create("invul" .. self.Entity:EntIndex(), value, 1, function()
 		if not IsValid(self.Entity) then return end
-		
+
 		color.a = 255
 		self.Entity:SetColor(color)
 	end)
