@@ -25,3 +25,16 @@ end
 hook.Add("PlayerInitialSpawn", "AirboatMod.Scoreboard.PlayerInitialSpawn", function(ply)
 	AMScoreboard.SendScoreboardUpdate(ply)
 end)
+
+
+hook.Add("AirboatMod.PostPlayerSpawn", "AirboatMod.Scoreboard.PlayerSpawn", function()
+    AMScoreboard.SendScoreboardUpdate()
+end)
+
+hook.Add("AirboatMod.PostPlayerLeave", "AirboatMod.Scoreboard.PlayerLeave", function()
+    AMScoreboard.SendScoreboardUpdate()
+end)
+
+hook.Add("AirboatMod.PostPlayerDeath", "AirboatMod.Scoreboard.PlayerDeath", function()
+    AMScoreboard.SendScoreboardUpdate()
+end)

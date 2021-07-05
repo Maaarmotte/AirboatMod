@@ -145,7 +145,8 @@ function AMPlayer:Spawn()
 	ParticleEffectAttach("ghost_smoke", PATTACH_ABSORIGIN_FOLLOW, boat, 0)
 
 	amBoat:Spawn()
-    AMScoreboard.SendScoreboardUpdate()
+    
+    hook.Call("AirboatMod.PostPlayerSpawn", nil, ply)
 end
 
 function AMPlayer:CanRespawn()
@@ -200,7 +201,6 @@ function AMPlayer:Leave()
 		self:SetPlaying(false)
 
 		AMMenu.Send(ply, "Main", "SetStatus", "notplaying", {})
-        AMScoreboard.SendScoreboardUpdate()
 
 		if self:GetAirboat() then
 			self.Entity:ExitVehicle()
@@ -210,6 +210,8 @@ function AMPlayer:Leave()
 
 			self:GetAirboat():Synchronize()
 		end
+
+        hook.Call("AirboatMod.PostPlayerLeave", nil, ply)
 	end
 end
 
@@ -243,6 +245,8 @@ function AMPlayer:Kill()
 			AMMenu.Send(ply, "Main", "SetStatus", "dead", {RespawnTime = 0, CanRespawn = self:CanRespawn()})
 		end
 	end)
+
+    hook.Call("AirboatMod.PostPlayerDeath", nil, ply)
 end
 
 function AMPlayer:Suicide()
@@ -298,5 +302,4 @@ end
 
 function AMPlayer:Update(values)
 	AMDatabase.Player.Update(self.Entity:SteamID(), values)
-    AMScoreboard.SendScoreboardUpdate()
 end
