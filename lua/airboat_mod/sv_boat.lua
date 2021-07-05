@@ -430,7 +430,7 @@ end
 function AMBoat.CollisionCallback(boat, data)
 	-- Be sure that this boat is valid and currently playing
 	local self = AMBoat.GetBoat(boat)
-	if not self or not boat:IsValid() or not self:IsPlaying() then return end
+	if not self or not boat:IsValid() or not self:IsPlaying() or not self:IsAlive() then return end
 
 	-- Don't take too much collisions at the same time
 	if CurTime() < self.InvulnerableUntil then return end
@@ -438,6 +438,9 @@ function AMBoat.CollisionCallback(boat, data)
 	-- Retrieve the entity hit and try to retrieve its boat structure
 	local otherEntity = data.HitEntity
 	local other = AMBoat.GetBoat(otherEntity)
+
+	-- No damage if the other player is dead
+	if other and not other:IsAlive() then return end
 
 	-- Compute the damage this boat is taking
 	local selfVel = 0
@@ -478,5 +481,9 @@ function AMBoat.CollisionCallback(boat, data)
 		end
 		
 		boat:EmitSound("weapons/bumper_car_hit" .. math.random(1, 8) .. ".wav")
+	end
+
+	function AMBoat:IsAlive()
+		return self:GetPlayer() and self:GetPlayer():IsAlive()
 	end
 end
