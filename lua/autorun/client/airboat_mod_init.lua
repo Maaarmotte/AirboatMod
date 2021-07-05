@@ -9,6 +9,7 @@ include("airboat_mod/mods.lua")
 include("airboat_mod/cl_player.lua")
 include("airboat_mod/cl_boat.lua")
 include("airboat_mod/cl_hud.lua")
+include("airboat_mod/cl_scoreboard.lua")
 
 local files, folders = file.Find("airboat_mod/mods/*", "LUA")
 for _, folderName in pairs(folders) do

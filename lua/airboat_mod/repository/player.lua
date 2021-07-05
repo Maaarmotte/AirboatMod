@@ -58,6 +58,22 @@ function Player.FindHighScore(limit)
     end)
 end
 
+function Player.FindLeaderboard()
+    return AMDatabase.request([[
+        SELECT * FROM %s
+            ORDER BY kills desc
+            LIMIT %d;
+    ]], Player.TABLE, 3, function(rep)
+        local players = {}
+
+        for _, data in pairs(rep or {}) do
+            table.insert(players, Player.Build(data))
+        end
+
+        return players
+    end)
+end
+
 function Player.FindOrCreate(gmPly)
     local ply = Player.FindBySteamId(gmPly:SteamID())
 

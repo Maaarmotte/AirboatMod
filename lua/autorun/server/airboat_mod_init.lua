@@ -5,6 +5,7 @@ AddCSLuaFile("airboat_mod/menu.lua")
 AddCSLuaFile("airboat_mod/cl_player.lua")
 AddCSLuaFile("airboat_mod/cl_boat.lua")
 AddCSLuaFile("airboat_mod/cl_hud.lua")
+AddCSLuaFile("airboat_mod/cl_scoreboard.lua")
 
 if not AMMain then AMMain = {} end
 AMMain.Spawns = {}
@@ -32,6 +33,7 @@ include("airboat_mod/sv_player.lua")
 include("airboat_mod/sv_spawn.lua")
 include("airboat_mod/menu.lua")
 include("airboat_mod/mods.lua")
+include("airboat_mod/sv_scoreboard.lua")
 
 local files, folders = file.Find("airboat_mod/mods/*", "LUA")
 for _, folderName in pairs(folders) do
