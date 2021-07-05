@@ -382,12 +382,12 @@ function AMBoat:OnDeath(attacker)
 			otherAmPly:IncrementKill()
 
 			if LogBox then
-				LogBox:Broadcast(team.GetColor(otherPly:Team()), otherPly:Name() .. " (" .. otherAmPly:GetKills() .. ")",
-					Color(255, 255, 255), " completely destroyed ", team.GetColor(ply:Team()), ply:Name() .. " (" .. amPlay:GetKills() .. ")")
+				LogBox:Broadcast(team.GetColor(otherPly:Team()), otherPly:Name() .. " (" .. otherAmPly:GetSessionKills() .. ")",
+					Color(255, 255, 255), " completely destroyed ", team.GetColor(ply:Team()), ply:Name() .. " (" .. amPlay:GetSessionKills() .. ")")
 			end
 		else
 			if LogBox then
-				LogBox:Broadcast(team.GetColor(ply:Team()), ply:Name() .. " (" .. amPlay:GetKills() .. ")",
+				LogBox:Broadcast(team.GetColor(ply:Team()), ply:Name() .. " (" .. amPlay:GetSessionKills() .. ")",
 					Color(255, 255, 255), " crushed himself into a wall !")
 			end
 		end

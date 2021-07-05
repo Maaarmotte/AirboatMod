@@ -9,23 +9,34 @@ function AMPlayer.New(ply)
 	local self = {}
 	setmetatable(self, AMPlayer_mt)
 
-	self.Settings = AMDatabase.Player.FindOrCreate(ply)
+	local playerInfo = AMDatabase.Player.FindOrCreate(ply)
+
+	if playerInfo.name ~= self:Name() then
+		self:Update({
+			name = self:Name()
+		})
+	end
 
 	self.Entity = ply
 	self.AMBoat = nil
 	
-	self.Mods = table.Merge(table.Copy(AMPlayer.DefaultMods), self.Settings.mods)
+	self.Mods = table.Merge(table.Copy(AMPlayer.DefaultMods), playerInfo.mods)
 	self.OwnedMods = { "boost", "jump", "boost2", "flamethrower", "freezer", "cage", "bathroom", "combine" }
-	self.Color = self.Settings.color
+	self.Color = playerInfo.color
 	
-	self.Points = self.Settings.points
-	self.Kills = 0
-	self.Deaths = 0
+	self.Points = playerInfo.points
+
+	self.GlobalKills = playerInfo.kills
+	self.GlobalDeaths = playerInfo.deaths
+
+	self.SessionKills = 0
+	self.SessionDeaths = 0
 	
 	self.Health = 15
 	self.Playing = false
 	self.Alive = false
 
+	self.PlayTime = playerInfo.playTime
 	self.playTimeReference = nil
 
 	ply.AMPlayer = self
@@ -77,10 +88,10 @@ function AMPlayer:SetPlaying(value)
 		local timePlayed = CurTime() - self.playTimeReference
 		self.playTimeReference = null
 
-		self.Settings.playTime = self.Settings.playTime + timePlayed
+		self.PlayTime = self.PlayTime + timePlayed
 
 		self:Update({
-			playTime = self.Settings.playTime
+			playTime = self.PlayTime
 		})
 	end
 end
@@ -93,7 +104,7 @@ function AMPlayer:GetMods()
 	return self.Mods
 end
 
-function AMPlayer:SetSettings(settings)
+function AMPlayer:SetInfo(settings)
 	settings.Color.a = 255
 	self.Color = settings.Color
 
@@ -158,7 +169,6 @@ function AMPlayer:SetMod(modid)
 
 	if self:IsOwningMod(modid) then
 		self.Mods[mod.Type] = modid
-		self.Settings.mods = self.Mods
 
 		self:Update({
 			mods = self.Mods
@@ -172,7 +182,6 @@ function AMPlayer:SetColor(color)
 	color.a = 255
 
 	self.Color = color
-	self.Settings.color = color
 
 	self:Update({
 		color = self.Color
@@ -259,21 +268,29 @@ function AMPlayer:CancelSuicide()
 	AMMenu.Send(ply, "Main", "SetStatus", "playing", {})
 end
 
+function AMPlayer:GetSessionKills()
+	return self.SessionKills
+end
+
+function AMPlayer:GetSessionDeaths()
+	return self.SessionDeaths
+end
+
 function AMPlayer:IncrementKill()
-	self.Kills = self.Kills + 1
-	self.Settings.kills = self.Settings.kills + 1
+	self.SessionKills = self.SessionKills + 1
+	self.GlobalKills = self.GlobalKills + 1
 
 	self:Update({
-		kills = self.Settings.kills
+		kills = self.GlobalKills
 	})
 end
 
 function AMPlayer:IncrementDeath()
-	self.Deaths = self.Deaths + 1
-	self.Settings.deaths = self.Settings.deaths + 1
+	self.SessionDeaths = self.SessionDeaths + 1
+	self.GlobalDeaths = self.GlobalDeaths + 1
 
 	self:Update({
-		deaths = self.Settings.deaths
+		deaths = self.GlobalDeaths
 	})
 end
 
