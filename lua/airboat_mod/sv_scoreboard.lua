@@ -10,10 +10,15 @@ function AMScoreboard.SendScoreboardUpdate(ply)
 		end
 		net.WriteTable(leaderboard)
 		
-        local scoreboard = {}
-        for i, p in ipairs(AMDatabase.Player.FindScoreboard(AMMain.GetAllPlayers())) do
-            table.insert(scoreboard, {name=p.name, score=p.kills})
-        end
+		local scoreboard = {}
+		for _, ply in pairs(player.GetAll()) do
+			local amPly = AMPlayer.GetPlayer(ply)
+			
+			if amPly and amPly:GetPlaying() then
+				table.insert(scoreboard, {name=ply:Name(), score=amPly:GetSessionKills()})
+			end
+		end
+
 		net.WriteTable(scoreboard)
 	if ply and ply:IsValid() then
 		net.Send(ply)
