@@ -4,7 +4,7 @@
 
 -   AirboatMod.PostPlayerSpawn(ply)
 -   AirboatMod.PostPlayerLeft(ply)
--   AirboatMod.PostPlayerDeath(ply)
+-   AirboatMod.PostPlayerKilled(ply)
 
 [UPGRADES]
 selectionnables avant d'utiliser l'airboat

@@ -34,6 +34,6 @@ hook.Add("AirboatMod.PostPlayerLeft", "AirboatMod.Scoreboard.PlayerLeave", funct
     AMScoreboard.SendScoreboardUpdate()
 end)
 
-hook.Add("AirboatMod.PostPlayerDeath", "AirboatMod.Scoreboard.PlayerDeath", function(ply)
+hook.Add("AirboatMod.PostPlayerKilled", "AirboatMod.Scoreboard.PlayerKilled", function(ply)
     AMScoreboard.SendScoreboardUpdate()
 end)

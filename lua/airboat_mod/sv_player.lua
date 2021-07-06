@@ -287,7 +287,7 @@ function AMPlayer:IncrementKill()
 		kills = self.GlobalKills
 	})
 
-    hook.Call("AirboatMod.PostPlayerDeath", nil, ply)
+    hook.Call("AirboatMod.PostPlayerKilled", nil, self.Entity)
 end
 
 function AMPlayer:IncrementDeath()
