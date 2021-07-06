@@ -84,3 +84,12 @@ end)
 hook.Add("InitPostEntity", "AirboatMod.UpdateSpawns", function()
 	AMSpawn.Update()	
 end)
+
+
+hook.Add("PlayerDisconnected", "AirboatMod.AutoLeave", function(ply)
+	local amPly = AMPlayer.GetPlayer(ply)
+
+	if amPly and amPly:GetPlaying() then
+		amPly:Leave()
+	end
+end)
