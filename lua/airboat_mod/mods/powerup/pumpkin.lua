@@ -3,7 +3,7 @@ local mod = {}
 mod.Name		= "powerup.pumpkin"
 mod.FullName	= "Pumpkin"
 mod.Type		= "powerup"
-mod.BaseAmount	= 1
+mod.BaseAmount	= 3
 mod.Delay 		= 1
 mod.Model		= "models/pickups/pickup_powerup_knockout.mdl"
 mod.ModelScale	= 1.6
@@ -21,7 +21,7 @@ function mod:OnUnmount()
 end
 
 function mod.Draw(info, w, y)
-	local bw = (w - 20 - 10)/mod.BaseAmount
+	local bw = (w - 15)/mod.BaseAmount - 5
 
 	surface.SetFont("am_hud_title")
 	surface.SetTextColor(235, 235, 235, 255)
@@ -48,8 +48,9 @@ end
 function mod:Run()
 	local ent = self.AMBoat:GetEntity()
 	local pumpkin = ents.Create("am_pumpkin")
-
-	self:SendInfoToClent({Amount = self.Amount-1})
+	
+	self.Amount = self.Amount - 1
+	self:SendInfoToClent({Amount = self.Amount})
 
 	pumpkin:SetPos(ent:GetPos() + ent:GetForward()*100)
 	pumpkin:SetAngles(self.AMBoat:GetEntity():GetAngles())
@@ -60,7 +61,10 @@ function mod:Run()
 
 	ent:EmitSound("misc/halloween/spelltick_01.wav")
 
-	self.AMBoat:UnmountPowerUp()
+
+	if self.Amount <= 0 then
+		self.AMBoat:UnmountPowerUp()
+	end
 end
 
 AMMods.Register(mod)

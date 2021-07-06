@@ -22,7 +22,7 @@ function mod:OnUnmount()
 end
 
 function mod.Draw(info, w, y)
-	local bw = (w - 20 - 10)/mod.BaseAmount
+	local bw = (w - 15)/mod.BaseAmount - 5
 
 	surface.SetFont("am_hud_title")
 	surface.SetTextColor(235, 235, 235, 255)
