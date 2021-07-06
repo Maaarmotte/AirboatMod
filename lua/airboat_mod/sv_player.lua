@@ -211,7 +211,7 @@ function AMPlayer:Leave()
 			self:GetAirboat():Synchronize()
 		end
 
-        hook.Call("AirboatMod.PostPlayerLeave", nil, ply)
+        hook.Call("AirboatMod.PostPlayerLeft", nil, ply)
 	end
 end
 
@@ -245,8 +245,6 @@ function AMPlayer:Kill()
 			AMMenu.Send(ply, "Main", "SetStatus", "dead", {RespawnTime = 0, CanRespawn = self:CanRespawn()})
 		end
 	end)
-
-    hook.Call("AirboatMod.PostPlayerDeath", nil, ply)
 end
 
 function AMPlayer:Suicide()
@@ -288,6 +286,8 @@ function AMPlayer:IncrementKill()
 	self:Update({
 		kills = self.GlobalKills
 	})
+
+    hook.Call("AirboatMod.PostPlayerKilled", nil, self.Entity)
 end
 
 function AMPlayer:IncrementDeath()

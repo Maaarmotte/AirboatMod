@@ -3,8 +3,8 @@
 ### Hooks
 
 -   AirboatMod.PostPlayerSpawn(ply)
--   AirboatMod.PostPlayerLeave(ply)
--   AirboatMod.PostPlayerDeath(ply)
+-   AirboatMod.PostPlayerLeft(ply)
+-   AirboatMod.PostPlayerKilled(ply)
 
 [UPGRADES]
 selectionnables avant d'utiliser l'airboat
