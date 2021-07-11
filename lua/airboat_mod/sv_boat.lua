@@ -320,8 +320,6 @@ function AMBoat:Damage(amount, attacker)
 		self.Health = math.max(0, self.Health - amount)
 		if self.Health == 0 then
 			self:OnDeath(attacker)
-		else
-			self:AddInvulnerableTime(AMBoat.InvulnerableTimeAfterDamage)
 		end
 		self:Synchronize()
 	end
@@ -482,6 +480,7 @@ function AMBoat.CollisionCallback(boat, data)
 	if math.max(selfVel, otherVel) > 500 then
 		if isWorld then
 			self:Damage(5, otherEntity)
+			self:AddInvulnerableTime(AMBoat.InvulnerableTimeAfterDamage)
 		else
 			if selfVel > otherVel then
 				self:Damage(1, otherEntity)
@@ -490,6 +489,10 @@ function AMBoat.CollisionCallback(boat, data)
 				self:Damage(5, otherEntity)
 				other:Damage(1, boat)
 			end
+
+			-- Add a small invulnerability time if hitam_boat_update
+			self:AddInvulnerableTime(AMBoat.InvulnerableTimeAfterDamage)
+			other:AddInvulnerableTime(AMBoat.InvulnerableTimeAfterDamage)
 
 			otherEntity:EmitSound("weapons/bumper_car_hit" .. math.random(1, 8) .. ".wav")
 		end
