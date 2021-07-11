@@ -57,11 +57,21 @@ if SERVER then
 			self:SetNotSolid(true)
 			self:SetNoDraw(true)
 
-			ent.AMBoat:Damage(5, self.AMBoatOwner)
+			if self.DamageAmmount and self.DamageAmmount > 0 then
+				ent.AMBoat:Damage(self.DamageAmmount, self.AMBoatOwner)
+			end
 
 			timer.Simple(delay*repetitions+1, function() self:Remove() end)
 			--warning from console : Changing collision rules within a callback is likely to cause crashes!
 		end
+	end
+
+	function ENT:SetDamageAmmount(damage)
+		self.DamageAmmount = damage
+	end
+
+	function ENT:SetBoatOwner(boat)
+		self.AMBoatOwner = boat
 	end
 else
 	function ENT:Draw()

@@ -1,5 +1,8 @@
 AMMod = {}
-AMMod_mt = { __index = function(tab, key) return AMMods.Mods[tab.Name][key] or AMMod[key] end}
+AMMod_mt = {
+	__index = function(tab, key) return AMMods.Mods[tab.Name][key] or AMMod[key] end,
+	type = "AMMod"
+}
 
 function AMMods.Instantiate(name, amBoat)
 	return AMMod.New(name, amBoat)

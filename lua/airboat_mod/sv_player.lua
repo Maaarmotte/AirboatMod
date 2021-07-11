@@ -1,5 +1,8 @@
 AMPlayer = {}
-AMPlayer_mt = {__index = function(tab, key) return AMPlayer[key] end}
+AMPlayer_mt = {
+	__index = function(tab, key) return AMPlayer[key] end,
+	type = "AMPlayer"
+}
 
 AMPlayer.DefaultMods = { shift="boost", space="jump", mouse1="", skin="" }
 AMPlayer.DefaultOwnedMods = { shift="boost", space="jump", mouse1="", skin="" }

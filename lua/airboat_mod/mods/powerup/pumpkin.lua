@@ -8,6 +8,7 @@ mod.Delay 		= 1
 mod.Model		= "models/pickups/pickup_powerup_knockout.mdl"
 mod.ModelScale	= 1.6
 mod.ModelOffset	= -Vector(0,0,36*mod.ModelScale)
+mod.Damage		= 2
 
 function mod:Initialize()
 	self.Amount = self.BaseAmount
@@ -54,11 +55,12 @@ function mod:Run()
 
 	pumpkin:SetPos(ent:GetPos() + ent:GetForward()*100)
 	pumpkin:SetAngles(self.AMBoat:GetEntity():GetAngles())
+	pumpkin:SetDamageAmmount(mod.Damage)
+	pumpkin.SetBoatOwner(self.AMBoat)
 
 	pumpkin:Spawn()
 	pumpkin:GetPhysicsObject():SetVelocity(ent:GetVelocity() + ent:GetForward()*2000)
-	pumpkin.AMBoatOwner = self.AMBoat
-
+	
 	ent:EmitSound("misc/halloween/spelltick_01.wav")
 
 

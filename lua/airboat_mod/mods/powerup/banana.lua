@@ -8,6 +8,7 @@ mod.Delay 		= 1
 mod.Model		= "models/pickups/pickup_powerup_regen.mdl"
 mod.ModelScale	= 1.6
 mod.ModelOffset	= -Vector(0,0,36*mod.ModelScale)
+mod.Damage		= 2
 
 function mod:Initialize()
 	self.Amount = self.BaseAmount
@@ -54,6 +55,8 @@ function mod:Run()
 
 	banana:SetPos(ent:GetPos() - ent:GetForward()*130)
 	banana:SetAngles(self.AMBoat:GetEntity():GetAngles())
+	banana:SetDamageAmmount(mod.Damage)
+	banana.SetBoatOwner(self.AMBoat)
 
 	banana:Spawn()
 	ent:EmitSound("misc/halloween/spelltick_01.wav")

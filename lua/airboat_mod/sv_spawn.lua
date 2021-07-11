@@ -90,3 +90,4 @@ function AMSpawn.Clean(id)
 		AMSpawnsPowerUps[id] = nil
 	end
 end
+

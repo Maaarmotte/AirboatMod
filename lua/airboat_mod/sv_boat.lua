@@ -1,8 +1,11 @@
 -- /!\ This class is too big and should be split
 util.AddNetworkString("am_boat_update")
 
-AMBoat = {}
-AMBoat_mt = {__index = function(tab, key) return AMBoat[key] end}
+AMBoat = AMBoat or {}
+AMBoat_mt = AMBoat_mt or {
+	__index = function(tab, key) return AMBoat[key] end,
+	type = "AMBoat"
+}
 
 AMBoat.LastTouchedDelayForKill = 2.5
 AMBoat.InvulnerableTimeAfterDamage = 0.5
@@ -10,6 +13,7 @@ AMBoat.InvulnerableTimeAfterDamage = 0.5
 -- Constructor
 function AMBoat.New()
 	local self = {}
+
 	self.Entity = nil
 	self.AMPlayer = nil
 	self.AMPowerUp = nil
@@ -31,6 +35,10 @@ function AMBoat.GetBoat(boat)
 	if boat and boat:IsValid() then
 		return boat.AMBoat
 	end
+end
+
+function AMBoat.IsBoat(boat)
+	return boat and getmetatable(boat) and getmetatable(boat).type == AMBoat_mt.type
 end
 
 -- Getters
@@ -286,6 +294,10 @@ function AMBoat:IsPlaying()
 end
 
 function AMBoat:Damage(amount, attacker)
+	if AMBoat.IsBoat(attacker) then
+		attacker = attacker:GetEntity()
+	end
+
 	for _, mod in pairs(self.Mods) do
 		if mod.OnDamage then
 			amount = mod:OnDamage(attacker, amount) or amount
@@ -299,12 +311,17 @@ function AMBoat:Damage(amount, attacker)
 				amount = mod:OnAttack(amBoat, amount) or amount
 			end
 		end
+
+		self.LastTouchedTime = CurTime()
+		self.LastTouchedBoat = amBoat
 	end
 
 	if self:IsPlaying() and self.Health > 0 then
 		self.Health = math.max(0, self.Health - amount)
 		if self.Health == 0 then
 			self:OnDeath(attacker)
+		else
+			self:AddInvulnerableTime(AMBoat.InvulnerableTimeAfterDamage)
 		end
 		self:Synchronize()
 	end
@@ -396,7 +413,9 @@ function AMBoat:OnDeath(attacker)
 			local otherAmPly = other:GetPlayer()
 			local otherPly = otherAmPly:GetEntity()
 
-			otherAmPly:IncrementKill()
+			if otherPly ~= ply then
+				otherAmPly:IncrementKill()
+			end
 
 			if LogBox then
 				LogBox:Broadcast(team.GetColor(otherPly:Team()), otherPly:Name() .. " (" .. otherAmPly:GetSessionKills() .. ")",
@@ -463,7 +482,6 @@ function AMBoat.CollisionCallback(boat, data)
 	if math.max(selfVel, otherVel) > 500 then
 		if isWorld then
 			self:Damage(5, otherEntity)
-			self:AddInvulnerableTime(AMBoat.InvulnerableTimeAfterDamage)
 		else
 			if selfVel > otherVel then
 				self:Damage(1, otherEntity)
@@ -473,10 +491,6 @@ function AMBoat.CollisionCallback(boat, data)
 				other:Damage(1, boat)
 			end
 
-			-- Add a small invulnerability time if hitam_boat_update
-			self:AddInvulnerableTime(AMBoat.InvulnerableTimeAfterDamage)
-			other:AddInvulnerableTime(AMBoat.InvulnerableTimeAfterDamage)
-
 			otherEntity:EmitSound("weapons/bumper_car_hit" .. math.random(1, 8) .. ".wav")
 		end
 		
@@ -485,6 +499,5 @@ function AMBoat.CollisionCallback(boat, data)
 end
 
 function AMBoat:IsAlive()
-	print(self:GetPlayer():GetEntity():Name(), self:GetPlayer():IsAlive())
 	return self:GetPlayer() and self:GetPlayer():IsAlive()
 end
